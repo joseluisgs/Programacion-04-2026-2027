@@ -111,6 +111,10 @@ Cuando quieres utilizar un objeto en C#, lo creas a partir de una clase usando l
 2. **Inicializa el estado inicial** del objeto, según lo que hayas definido en la clase.
 3. **Devuelve una referencia**, es decir, una "dirección" en la memoria por la que podrás localizar ese objeto para usarlo en el futuro.
 
+¿Por qué hace falta `new`? Porque la clase **no es el objeto**: es solo el plano, guardado en los metadatos del programa. Declarar `Gato g;` no crea nada detrás: si usas la referencia sin crear el objeto, el compilador te avisa; y si la referencia acaba en `null`, el primer acceso estalla con `NullReferenceException`. Solo `new` materializa el objeto en el heap y le da a `g` una dirección real.
+
+> 📝 **Nota:** `new` no es una novedad de la POO: llevas usándolo desde la UD03 con los arrays (`new int[5]`, `new double[3, 4]`). Misma palabra, misma idea —reservar espacio en memoria—; la única diferencia es que, con una clase, al reservar se ejecuta además su constructor.
+
 Así, aunque crees dos objetos iguales (mismo estado), cada uno tendrá una referencia diferente y serán instancias distintas, con identidad propia. El siguiente programa lo demuestra con una clase `Gato`:
 
 ```csharp
