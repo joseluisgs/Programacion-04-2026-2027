@@ -51,7 +51,9 @@ Las excepciones son el mecanismo para gestionar estos **eventos impredecibles de
 
 ## 11.2. Jerarquía de excepciones en C#
 
-En C#, todas las excepciones heredan de la clase base `System.Exception`. Es fundamental entender esta jerarquía para capturar los errores de forma precisa, porque el `catch` decide qué tipos acepta.
+En C#, todas las excepciones heredan de la clase base `System.Exception`. Es fundamental entender esta jerarquía para capturar los errores de forma precisa, porque el `catch` decide qué tipos acepta. La clase `Exception` vive en el ensamblado `System.Runtime` y de ella cuelgan dos grandes familias: las de **sistema** (`SystemException`) y las de **aplicación** (`ApplicationException`).
+
+Este es el esquema completo de la jerarquía, listo para dibujarlo en el papel antes de escribir una sola línea:
 
 ```mermaid
 classDiagram
@@ -88,6 +90,10 @@ classDiagram
     ArithmeticException <|-- DivideByZeroException
     IOException <|-- FileNotFoundException
 ```
+
+La misma jerarquía, ya dibujada como diagrama de referencia con las familias principales de .NET:
+
+![Jerarquía de excepciones en C#: de Exception cuelgan SystemException y ApplicationException](./images/csharp_exceptions_hierarchy.png)
 
 📌 **Ejemplo real:** Cuando una API de pago falla, el servicio distingue `PaymentDeclinedException` (el banco dijo que no) de `TimeoutException` (la red no respondió): cada una lleva a una reacción distinta (reintentar vs. avisar al usuario). Esa precisión nace de la jerarquía.
 
