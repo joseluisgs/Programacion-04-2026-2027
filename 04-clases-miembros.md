@@ -2,6 +2,7 @@
   - [4.1. Sintaxis básica de una clase](#41-sintaxis-básica-de-una-clase)
   - [4.2. Estado definido por propiedades](#42-estado-definido-por-propiedades)
   - [4.3. Comportamiento definido por métodos](#43-comportamiento-definido-por-métodos)
+    - [4.3.1. Parámetros en la llamada a métodos](#431-parámetros-en-la-llamada-a-métodos)
   - [4.4. Visibilidad de atributos y métodos: cuándo usar cada uno](#44-visibilidad-de-atributos-y-métodos-cuándo-usar-cada-uno)
   - [4.5. Modificadores de acceso: public, internal, private, protected](#45-modificadores-de-acceso-public-internal-private-protected)
   - [4.6. Otros modificadores: sealed, const, readonly, static readonly, required](#46-otros-modificadores-sealed-const-readonly-static-readonly-required)
@@ -24,6 +25,7 @@ En este punto aprenderás a escribir la sintaxis de una clase en C#, a separar e
 **Objetivos de aprendizaje:**
 
 - Definir una clase con sus atributos y métodos siguiendo la nomenclatura PascalCase
+- Usar parámetros en la llamada a métodos: paso por valor, `ref`, `out` y argumentos con nombre
 - Explicar por qué se usan propiedades en lugar de campos públicos
 - Aplicar los modificadores de acceso (`public`, `private`, `internal`, `protected`) y saber cuándo conviene cada uno
 - Distinguir los demás modificadores: `sealed`, `const`, `readonly`, `static readonly` y `required`
@@ -95,6 +97,64 @@ public class Pelota
 ```
 
 📌 **Ejemplo real:** En una app de reparto, el objeto `Pedido` tiene métodos como `Cancelar()` o `MarcarComoEntregado()`: nadie de fuera "marca a mano" el estado del pedido; se hace a través de su comportamiento, que aplica las reglas de negocio.
+
+### 4.3.1. Parámetros en la llamada a métodos
+
+Los métodos casi nunca trabajan siempre con los mismos datos: reciben **parámetros** que le dicen qué usar en cada llamada. Al llamar a un método le pasas **argumentos**, y en C# se pueden pasar de varias formas.
+
+Esta clase reúne los tres modos principales de pasar datos a un método:
+
+```csharp
+public class Calculadora
+{
+    // 1. Paso por valor (el modo habitual): el método recibe una COPIA
+    public int Duplicar(int numero) => numero * 2;
+
+    // 2. ref: el método recibe la referencia y puede MODIFICAR el original
+    public void Redondear(ref double valor) => valor = Math.Round(valor);
+
+    // 3. out: el método DEBE asignar el valor antes de terminar
+    public void Dividir(int a, int b, out int cociente, out int resto)
+    {
+        cociente = a / b;
+        resto = a % b;
+    }
+}
+```
+
+Y así se llaman los tres, con sus consecuencias:
+
+```csharp
+var calc = new Calculadora();
+
+// Por valor: el original no se entera
+int resultado = calc.Duplicar(5);          // resultado = 10
+
+// ref: el original SÍ cambia
+double precio = 4.999;
+calc.Redondear(ref precio);                // precio = 5.0
+
+// out: el método devuelve dos resultados a la vez
+calc.Dividir(17, 5, out int cociente, out int resto); // cociente = 3, resto = 2
+```
+
+También puedes facilitar las llamadas con **argumentos con nombre** y **parámetros opcionales**, para que quien llame solo indique lo que le interese:
+
+```csharp
+public void Registrar(string nombre, string rol = "cliente", int intentos = 0)
+{
+    // ...
+}
+
+Registrar("Ana");                          // rol e intentos usan sus valores por defecto
+Registrar("Luis", intentos: 3);            // argumento con nombre: salta el parámetro intermedio
+```
+
+📌 **Ejemplo real:** Cuando una app te deja subir una foto sin indicar la descripción (parámetro opcional) o al revés, escribiendo solo `descripcion: "playa"` sin tocar el resto (argumento con nombre), están usando estas formas de llamada. El `out` es el que usas con `int.TryParse` para devolver el número y a la vez decir si ha ido bien.
+
+> 📝 **Nota:** Los modificadores `ref`, `out` e `in` se estudiaron en la **UD02** (programación modular, tabla de modificadores de parámetros). Aquí los aplicas a los métodos de tus propias clases: mismo concepto, nuevo contexto.
+
+> 💡 **Truco:** Si un método necesita devolver **varios resultados**, un `out` suele ser más cómodo que crear una clase entera solo para eso. Y si necesitas modificar el dato original del llamante, ese es `ref`; si el dato no cambia nunca, mejor `in` o nada (paso por valor).
 
 ## 4.4. Visibilidad de atributos y métodos: cuándo usar cada uno
 
@@ -417,6 +477,7 @@ graph TD
 | **`required`** | La propiedad es obligatoria al crear el objeto |
 | **`partial`** | Reparte una clase en varios ficheros |
 | **`is` / `as`** | Comprobar el tipo / convertir devolviendo `null` si no encaja |
+| **Parámetros** | Por valor (copia), `ref` (modifica el original), `out` (resultado), argumentos con nombre |
 | **Tipos por referencia** | Asignar una variable a otra hace que apunten al mismo objeto |
 | **`null` y `?.`** | Referencia a nada; el acceso seguro evita la `NullReferenceException` |
 | **UML** | `+` público, `-` privado, `#` protegido, `~` interno |
