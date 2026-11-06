@@ -243,7 +243,7 @@ graph TD
     C[Cliente] --> B[PersonaBuilder]
     B --> N[SetNombre]
     B --> E[SetEdad]
-    N --> F[Build()]
+    N --> F["Build()"]
     E --> F
     F --> P[Persona completa]
     style C fill:#2196F3,color:#fff
