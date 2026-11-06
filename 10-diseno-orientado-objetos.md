@@ -5,8 +5,9 @@
   - [10.2. Cardinalidad uno a uno (1-1)](#102-cardinalidad-uno-a-uno-1-1)
   - [10.3. Cardinalidad uno a muchos (1-N)](#103-cardinalidad-uno-a-muchos-1-n)
   - [10.4. Cardinalidad muchos a muchos (N-M)](#104-cardinalidad-muchos-a-muchos-n-m)
-  - [10.5. ¿Quién pone el enlace? Constructor o setter](#105-quién-pone-el-enlace-constructor-o-setter)
-  - [10.6. Errores típicos de diseño](#106-errores-típicos-de-diseño)
+  - [10.5. Navegabilidad de las relaciones: hacia dónde se mira](#105-navegabilidad-de-las-relaciones-hacia-dónde-se-mira)
+  - [10.6. ¿Quién pone el enlace? Constructor o setter](#106-quién-pone-el-enlace-constructor-o-setter)
+  - [10.7. Errores típicos de diseño](#107-errores-típicos-de-diseño)
   - [¿Qué viene después?](#qué-viene-después)
   - [Buenas prácticas](#buenas-prácticas)
 
@@ -23,6 +24,7 @@ En este punto aprenderás a pasar un diagrama E/R a un modelo de clases equivale
 - Traducir entidades y atributos de un diagrama E/R a tipos `struct` y campos en C#
 - Diseñar relaciones uno a uno, uno a muchos y muchos a muchos sin colecciones dinámicas
 - Entender por qué la cardinalidad "muchos" es la que condiciona todo el diseño
+- Entender la navegabilidad de cada relación: en qué lado vive el enlace y hacia dónde se puede mirar
 - Decidir si el enlace se pasa por constructor o por setter y anticipar sus problemas
 - Representar las relaciones con arrays, matrices y tuplas, a nivel de esta unidad
 
@@ -272,7 +274,46 @@ Los problemas del N-M son los del "muchos" multiplicados por dos: la matriz se d
 
 📌 **Ejemplo real:** En Spotify, cada usuario sigue a muchos artistas y cada artista tiene muchos seguidores. Esa relación no está ni en la tabla de usuarios ni en la de artistas: vive en una tabla aparte (`seguidores`), justo la tabla intermedia que aquí representas con tuplas.
 
-## 10.5. ¿Quién pone el enlace? Constructor o setter
+## 10.5. Navegabilidad de las relaciones: hacia dónde se mira
+
+La **navegabilidad** de una relación es la dirección en la que puedes llegar de un objeto al otro: dónde vive el enlace. En el diagrama de clases se dibuja con la punta de la flecha y en el código se decide con **en qué clase pones el campo**. No es un capricho: de esa dirección depende qué preguntas responde tu programa de un salto y cuáles le cuestan un recorrido entero.
+
+En el 1-N la flecha va del "uno" al "muchos" **porque el campo está en el uno**: `Aula` guarda el array de `Alumno`, así que desde un aula llegas a sus alumnos en un salto; pero desde un alumno **no** hay forma de saber a qué aula pertenece, porque el enlace no vive en él.
+
+```mermaid
+classDiagram
+    class Aula {
+        +string Nombre
+        +Alumno[] Alumnos
+    }
+    class Alumno {
+        +int Id
+        +string Nombre
+    }
+    Aula "1" --> "*" Alumno : navega
+```
+
+Esta es la navegabilidad de las tres cardinalidades tal como las has diseñado:
+
+| Cardinalidad | Navegación posible | Cómo se consigue |
+| :--- | :--- | :--- |
+| **1-1** | De la clase que guarda el campo, hacia la otra | Un salto: `alumno.Matricula` |
+| **1-N** | Del "uno" al "muchos" | Un salto: `aula.Alumnos[0]` |
+| **1-N al revés** | Del "muchos" al "uno" | **Sin enlace**: recorrer todas las aulas o añadir la referencia inversa |
+| **N-M** | De cualquier lado al otro | A través de la estructura intermedia (matriz o tuplas) |
+
+¿Y si necesitas navegar al revés? Hay dos caminos:
+
+1. **Búsqueda:** recorrer el lado "uno" hasta encontrar el que contiene al elemento. Funciona, pero es lineal: en el peor caso recorres todo.
+2. **Referencia inversa:** añadir en `Alumno` un campo `Aula` con el enlace de vuelta. Navegas en un salto en las dos direcciones... pero introduces **redundancia**: si cambias el aula de un alumno por un lado y olvidas actualizar el otro, los datos se contradicen. Por eso la doble navegabilidad solo se añade si el programa la necesita de verdad.
+
+📌 **Ejemplo real:** En Glovo, desde un `Pedido` llegas a sus líneas de un salto, pero responder "todos los pedidos de este repartidor" exige buscar uno a uno... o guardar en cada repartidor un enlace de vuelta. Elegir entre buscar y redundar es una decisión de diseño, no de código.
+
+> 💡 **Consejo:** Pregunta en el diseño: "¿desde qué lado necesito preguntar?". Si solo se mira en una dirección, el enlace vive ahí y el otro lado no se toca; si se mira en las dos, decide a propósito si pagas la redundancia o la búsqueda.
+
+> 📝 **Nota:** En bases de datos lo haces todo el tiempo con la clave externa: `alumno.aula_id` pone el enlace en el "muchos" y navega del alumno a su aula. Fíjate que ahí la dirección es la contraria a la de este ejemplo: la regla no cambia — **navega quien guarda el enlace** —, cambia dónde decides guardarlo.
+
+## 10.6. ¿Quién pone el enlace? Constructor o setter
 
 El diagrama E/R te dice **qué** relación hay; falta decidir **cuándo** recibe el objeto su enlace. Aquí hay dos candidatos, y elegir mal es el origen de media docena de errores:
 
@@ -315,7 +356,7 @@ Los problemas de cada opción, resumidos para que los tengas claros:
 
 📌 **Ejemplo real:** En Glovo, un pedido nace con su dirección y su importe (constructor), pero el repartidor se le asigna después (setter) cuando alguien lo acepta. Si ningún repartidor lo acepta y nadie comprueba ese "setter", el pedido circula sin repartidor: el estado a medias, en una app real, es un pedazo de pan.
 
-## 10.6. Errores típicos de diseño
+## 10.7. Errores típicos de diseño
 
 Estos son los fallos que aparecen una y otra vez al pasar del diagrama E/R al código, con su arreglo:
 
@@ -340,6 +381,7 @@ Estos son los fallos que aparecen una y otra vez al pasar del diagrama E/R al c�
 | **1-1** | Un campo dentro del struct: cada alumno, su matrícula |
 | **1-N** | Un array dentro del struct: cada aula, sus alumnos |
 | **N-M** | Estructura intermedia: matriz de booleanos o array de tuplas |
+| **Navegabilidad** | Dirección en la que vive el enlace: quien guarda el campo es quien navega |
 | **La cardinalidad "muchos"** | Condiciona todo el diseño y choca con el tamaño fijo de los arrays |
 | **Constructor** | El enlace se pone al crear: el objeto nace completo |
 | **Setter** | El enlace se pone después: riesgo de olvido y de estado a medias |
