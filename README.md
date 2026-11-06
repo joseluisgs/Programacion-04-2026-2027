@@ -16,10 +16,11 @@ UD04. Programación Orientada a Objetos. 1DAW. Curso 2026-2027.
 7. [Encapsulación, propiedades y miembros estáticos](07-encapsulacion-propiedades-estaticos.md)
 8. [Enums, structs y records](08-enums-structs-records.md)
 9. [Clases anidadas y composición](09-composicion-anidadas.md)
-10. [Patrones básicos de diseño](10-patrones-diseno.md)
-11. [Excepciones en la POO](11-excepciones.md)
-12. [Buenas prácticas en el desarrollo de software](12-buenas-practicas.md)
-13. [Resumen y conclusiones](13-resumen.md)
+10. [Diseño orientado a objetos: del diagrama E/R a las clases](10-diseno-orientado-objetos.md)
+11. [Patrones básicos de diseño](11-patrones-diseno.md)
+12. [Excepciones en la POO](12-excepciones.md)
+13. [Buenas prácticas en el desarrollo de software](13-buenas-practicas.md)
+14. [Resumen y conclusiones](14-resumen.md)
 
 
 ## Contenido en YouTube

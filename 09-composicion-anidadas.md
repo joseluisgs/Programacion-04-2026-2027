@@ -149,7 +149,7 @@ Aunque la herencia es potente, la composición suele ser preferible en muchos di
 
 ## ¿Qué viene después?
 
-En el siguiente punto veremos patrones básicos de diseño: soluciones probadas a problemas recurrentes, como el Singleton, el Builder o los métodos fábrica.
+En el siguiente punto veremos el diseño orientado a objetos: cómo traducir un diagrama E/R a clases, con sus cardinalidades (1-1, 1-N y N-M) y la decisión de si el enlace se pone en el constructor o en el setter.
 
 ## Buenas prácticas
 

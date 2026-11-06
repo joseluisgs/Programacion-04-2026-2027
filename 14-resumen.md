@@ -1,6 +1,6 @@
-- [13. Resumen y conclusiones UD04](#13-resumen-y-conclusiones-ud04)
-  - [13.1. Mapa conceptual de la unidad](#131-mapa-conceptual-de-la-unidad)
-  - [13.2. Conceptos clave](#132-conceptos-clave)
+- [14. Resumen y conclusiones UD04](#14-resumen-y-conclusiones-ud04)
+  - [14.1. Mapa conceptual de la unidad](#141-mapa-conceptual-de-la-unidad)
+  - [14.2. Conceptos clave](#142-conceptos-clave)
     - [Conceptos y principios de la POO](#conceptos-y-principios-de-la-poo)
     - [Objetos y clases](#objetos-y-clases)
     - [Clases, miembros y visibilidad](#clases-miembros-y-visibilidad)
@@ -9,17 +9,17 @@
     - [Enums, structs y records](#enums-structs-y-records)
     - [Composición y patrones de diseño](#composición-y-patrones-de-diseño)
     - [Excepciones y buenas prácticas](#excepciones-y-buenas-prácticas)
-  - [13.3. Herramientas y perfiles](#133-herramientas-y-perfiles)
-  - [13.4. Errores comunes a evitar](#134-errores-comunes-a-evitar)
-  - [13.5. Checklist de supervivencia](#135-checklist-de-supervivencia)
-  - [13.6. Glosario de términos](#136-glosario-de-términos)
-  - [13.7. Ejercicios de repaso](#137-ejercicios-de-repaso)
-  - [13.8. ¿Qué viene después?](#138-qué-viene-después)
-  - [13.9. Mapa de conexiones entre temas](#139-mapa-de-conexiones-entre-temas)
+  - [14.3. Herramientas y perfiles](#143-herramientas-y-perfiles)
+  - [14.4. Errores comunes a evitar](#144-errores-comunes-a-evitar)
+  - [14.5. Checklist de supervivencia](#145-checklist-de-supervivencia)
+  - [14.6. Glosario de términos](#146-glosario-de-términos)
+  - [14.7. Ejercicios de repaso](#147-ejercicios-de-repaso)
+  - [14.8. ¿Qué viene después?](#148-qué-viene-después)
+  - [14.9. Mapa de conexiones entre temas](#149-mapa-de-conexiones-entre-temas)
 
 
 
-# 13. Resumen y conclusiones UD04
+# 14. Resumen y conclusiones UD04
 
 > 💡 **Punto de partida:** Has pasado de escribir programas con datos sueltos a modelar el mundo real con objetos: clases, propiedades, constructores, patrones y excepciones. Este resumen es tu mapa para repasarlo todo antes del examen.
 
@@ -29,7 +29,7 @@
 - Consolidar el vocabulario técnico de la POO
 - Tener una referencia rápida para el examen
 
-## 13.1. Mapa conceptual de la unidad
+## 14.1. Mapa conceptual de la unidad
 
 ```mermaid
 graph TD
@@ -84,7 +84,7 @@ graph TD
     style H2 fill:#607D8B,color:#fff
 ```
 
-## 13.2. Conceptos clave
+## 14.2. Conceptos clave
 
 ### Conceptos y principios de la POO
 
@@ -171,7 +171,7 @@ graph TD
 
 📌 **Ejemplo real:** `int.Parse("abc")` lanza `FormatException` en vez de devolver un número mágico: el error viaja por su canal.
 
-## 13.3. Herramientas y perfiles
+## 14.3. Herramientas y perfiles
 
 ### IDE y entorno
 
@@ -200,7 +200,7 @@ dotnet add package Spectre.Console
 - **`.csproj`:** proyecto con sus dependencias y referencias a paquetes
 - **Ensamblado:** resultado de compilar (`.exe` o `.dll`)
 
-## 13.4. Errores comunes a evitar
+## 14.4. Errores comunes a evitar
 
 | Error | Por qué está mal | Cómo evitarlo |
 | :--- | :--- | :--- |
@@ -215,7 +215,7 @@ dotnet add package Spectre.Console
 | **Instalar paquetes fuera del `.csproj`** | El paquete no se añade a ningún sitio | Entrar en la carpeta del proyecto antes de `dotnet add package` |
 | **Métodos que hacen cinco cosas** | Imposibles de leer y de testear | Responsabilidad única por método |
 
-## 13.5. Checklist de supervivencia
+## 14.5. Checklist de supervivencia
 
 Antes de dar por cerrado el tema, asegúrate de poder responder **SÍ** a estas preguntas:
 
@@ -238,7 +238,7 @@ Antes de dar por cerrado el tema, asegúrate de poder responder **SÍ** a estas 
 > - **`init` = cuándo se escribe; `required` = si se escribe**
 > - **Específico → genérico** en los `catch`
 
-## 13.6. Glosario de términos
+## 14.6. Glosario de términos
 
 | Término | Definición |
 | :--- | :--- |
@@ -265,7 +265,7 @@ Antes de dar por cerrado el tema, asegúrate de poder responder **SÍ** a estas 
 | **SRP** | Principio de responsabilidad única: una razón para cambiar |
 | **DRY** | No repitas código: extrae la lógica común |
 
-## 13.7. Ejercicios de repaso
+## 14.7. Ejercicios de repaso
 
 1. **Modela una clase `Alumno`** con nombre, nota y un método que diga si aprueba; instancía tres alumnos.
 2. **Encapsula** la clase anterior: campos `private` y propiedades públicas con validación de nota entre 0 y 10.
@@ -278,7 +278,7 @@ Antes de dar por cerrado el tema, asegúrate de poder responder **SÍ** a estas 
 9. **Escribe un método** que lance `ArgumentException` si recibe datos inválidos y captúralo en el llamante con el orden correcto.
 10. **Revisa un código** que hayas escrito antes y aplícale SRP y DRY: divide clases y elimina duplicidades.
 
-## 13.8. ¿Qué viene después?
+## 14.8. ¿Qué viene después?
 
 En la **UD05: POO avanzada** profundizarás en herencia, polimorfismo, interfaces y abstracción: los conceptos que aquí has visto por primera vez se convertirán en arquitecturas completas. Los arrays de la UD03 y los objetos de esta unidad se unirán en colecciones y genéricos.
 
@@ -291,7 +291,7 @@ En la **UD05: POO avanzada** profundizarás en herencia, polimorfismo, interface
 | Excepciones | Gestionar errores en aplicaciones completas |
 | Patrones básicos | Aplicar patrones avanzados de diseño |
 
-## 13.9. Mapa de conexiones entre temas
+## 14.9. Mapa de conexiones entre temas
 
 ```mermaid
 graph LR

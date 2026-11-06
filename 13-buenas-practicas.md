@@ -1,18 +1,18 @@
-- [12. Buenas prácticas en el desarrollo de software](#12-buenas-prácticas-en-el-desarrollo-de-software)
-  - [12.1. Nomenclatura y estilo](#121-nomenclatura-y-estilo)
-  - [12.2. Mantener clases pequeñas y con responsabilidad única (SRP)](#122-mantener-clases-pequeñas-y-con-responsabilidad-única-srp)
-  - [12.3. Métodos cortos y enfocados](#123-métodos-cortos-y-enfocados)
-    - [12.3.1. Principio DRY (`Don't Repeat Yourself`)](#1231-principio-dry-dont-repeat-yourself)
-  - [12.4. Preferir propiedades sobre campos públicos](#124-preferir-propiedades-sobre-campos-públicos)
-  - [12.5. Inmutabilidad cuando proceda](#125-inmutabilidad-cuando-proceda)
-  - [12.6. Validación temprana (fail-fast)](#126-validación-temprana-fail-fast)
-  - [12.7. Documentación con XML comments](#127-documentación-con-xml-comments)
-  - [12.8. Consideraciones de rendimiento](#128-consideraciones-de-rendimiento)
-  - [12.9. Gestión de dependencias y separación de capas](#129-gestión-de-dependencias-y-separación-de-capas)
+- [13. Buenas prácticas en el desarrollo de software](#13-buenas-prácticas-en-el-desarrollo-de-software)
+  - [13.1. Nomenclatura y estilo](#131-nomenclatura-y-estilo)
+  - [13.2. Mantener clases pequeñas y con responsabilidad única (SRP)](#132-mantener-clases-pequeñas-y-con-responsabilidad-única-srp)
+  - [13.3. Métodos cortos y enfocados](#133-métodos-cortos-y-enfocados)
+    - [13.3.1. Principio DRY (`Don't Repeat Yourself`)](#1331-principio-dry-dont-repeat-yourself)
+  - [13.4. Preferir propiedades sobre campos públicos](#134-preferir-propiedades-sobre-campos-públicos)
+  - [13.5. Inmutabilidad cuando proceda](#135-inmutabilidad-cuando-proceda)
+  - [13.6. Validación temprana (fail-fast)](#136-validación-temprana-fail-fast)
+  - [13.7. Documentación con XML comments](#137-documentación-con-xml-comments)
+  - [13.8. Consideraciones de rendimiento](#138-consideraciones-de-rendimiento)
+  - [13.9. Gestión de dependencias y separación de capas](#139-gestión-de-dependencias-y-separación-de-capas)
 
 
 
-# 12. Buenas prácticas en el desarrollo de software
+# 13. Buenas prácticas en el desarrollo de software
 
 > 💡 **Punto de partida:** ¿Por qué dos programas que "hacen lo mismo" pueden tardar semanas en mantenerse uno y meses el otro? La diferencia no es la funcionalidad, es el código: nombres claros, clases pequeñas, sin repetición. En este punto recopilarás las buenas prácticas que separan al aficionado del profesional.
 
@@ -26,7 +26,7 @@ En este punto aprenderás las convenciones de nomenclatura, los principios de di
 - Validar pronto con el principio *fail-fast* y documentar con XML comments
 - Organizar el código en capas con namespaces claros
 
-## 12.1. Nomenclatura y estilo
+## 13.1. Nomenclatura y estilo
 
 El código se lee muchas más veces de las que se escribe. Usa nombres que expliquen la **intención**, no el tipo:
 
@@ -38,7 +38,7 @@ El código se lee muchas más veces de las que se escribe. Usa nombres que expli
 
 > 💡 **Consejo:** Los nombres en inglés son la convención profesional (identificadores), pero los mensajes al usuario y los comentarios van en español: así lo hacemos en todo el ciclo.
 
-## 12.2. Mantener clases pequeñas y con responsabilidad única (SRP)
+## 13.2. Mantener clases pequeñas y con responsabilidad única (SRP)
 
 El principio de **responsabilidad única** (*Single Responsibility Principle*) dicta que una clase debe tener **una sola razón para cambiar**.
 
@@ -47,13 +47,13 @@ El principio de **responsabilidad única** (*Single Responsibility Principle*) d
 
 📌 **Ejemplo real:** En Netflix, el sistema que recomienda películas no descarga los vídeos: es una clase distinta de la que los sirve. Si mañana cambian el algoritmo de recomendaciones, no tocan nada del reproductor.
 
-## 12.3. Métodos cortos y enfocados
+## 13.3. Métodos cortos y enfocados
 
 Cada método debe hacer una sola tarea. Si un método es muy largo o tiene muchos niveles de anidamiento, es una señal clara de que debe dividirse.
 
 > 💡 **Analogía:** Un método es una receta de cocina: si ocupa tres páginas, es probablemente tres recetas pegadas. Mejor tres métodos que se llaman entre sí.
 
-### 12.3.1. Principio DRY (`Don't Repeat Yourself`)
+### 13.3.1. Principio DRY (`Don't Repeat Yourself`)
 
 Evita repetir código. Si ves que copias y pegas la misma lógica en tres sitios, extrae esa lógica a un método común o a una clase de utilidad. La duplicación es la raíz de muchos *bugs*: si cambias la lógica en un sitio, debes acordarte de cambiarla en todos.
 
@@ -65,7 +65,7 @@ decimal total = importe + Iva.Calcular(importe);
 
 📌 **Ejemplo real:** Si cada pantalla de tu app calcula el precio final a su manera, llegará el día en que una aplique IVA y otra no. Centralizar el cálculo en un sitio es la diferencia entre un bug puntual y un escándalo contable.
 
-## 12.4. Preferir propiedades sobre campos públicos
+## 13.4. Preferir propiedades sobre campos públicos
 
 El estado de un objeto debe estar protegido. Nunca expongas variables directamente (`public int Edad`): usa siempre propiedades, incluso si son automáticas, para poder añadir validaciones en el futuro sin romper el código que ya usa tu clase.
 
@@ -77,7 +77,7 @@ public int Edad;
 public int Edad { get; set; }
 ```
 
-## 12.5. Inmutabilidad cuando proceda
+## 13.5. Inmutabilidad cuando proceda
 
 Si un objeto no debe cambiar después de crearse (una transacción terminada, un punto en el espacio), usa propiedades `readonly`, `init` y el tipo `record`. Los objetos inmutables son mucho más fáciles de depurar y más seguros en entornos multihilo.
 
@@ -91,7 +91,7 @@ var ajuste = venta with { Importe = 44.99m };
 
 📌 **Ejemplo real:** Los importes de una factura ya emitida no se editan: si hay un error, se emite una factura rectificativa. Modelarlo como `record` inmutable reproduce esa regla de negocio en el propio código.
 
-## 12.6. Validación temprana (fail-fast)
+## 13.6. Validación temprana (fail-fast)
 
 Comprueba los argumentos de los métodos y constructores lo antes posible. No esperes a que el error ocurra en la línea 50: lanza una excepción en la línea 1 si los datos son malos.
 
@@ -106,7 +106,7 @@ public void ProcesarPedido(Pedido p)
 
 > 💡 **Truco:** `nameof(p)` devuelve el nombre del parámetro como texto: si mañana renombras la variable, el mensaje de error se actualiza solo.
 
-## 12.7. Documentación con XML comments
+## 13.7. Documentación con XML comments
 
 Escribe siempre resúmenes que expliquen el **qué** y el **por qué**, no solo el **cómo**. C# permite generar documentación automática a partir de estos comentarios:
 
@@ -127,7 +127,7 @@ public decimal CalcularInteres(decimal capital, int riesgo)
 
 > 📝 **Nota:** La norma del proyecto exige XMLDoc en clases públicas, interfaces y métodos públicos; el código autoexplicativo no necesita comentario.
 
-## 12.8. Consideraciones de rendimiento
+## 13.8. Consideraciones de rendimiento
 
 Evita operaciones costosas (consultas a base de datos, cálculos complejos) dentro de los bloques `get` de las propiedades o dentro de los constructores. Para estos casos, usa métodos explícitos (`CargarDatos()`) o el patrón `Lazy<T>`.
 
@@ -142,7 +142,7 @@ public List<Usuario> Usuarios => _usuarios.Value;
 
 > ⚠️ **Advertencia:** Una propiedad debe parecer barata: quien la llama no espera que "haga cosas raras". Si leer algo es caro, mejor es un método (`ObtenerUsuarios()`), que avisa por su nombre de que hay trabajo detrás.
 
-## 12.9. Gestión de dependencias y separación de capas
+## 13.9. Gestión de dependencias y separación de capas
 
 Organiza tu código en capas lógicas, cada una con su misión:
 

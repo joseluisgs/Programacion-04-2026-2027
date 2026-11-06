@@ -1,17 +1,17 @@
-- [10. Patrones básicos de diseño orientados a objetos](#10-patrones-básicos-de-diseño-orientados-a-objetos)
-  - [10.1. Singleton](#101-singleton)
-  - [10.2. Lazy o perezoso](#102-lazy-o-perezoso)
-  - [10.3. Métodos fábrica (factory methods / static creators)](#103-métodos-fábrica-factory-methods--static-creators)
-  - [10.4. Inicializadores estáticos (static constructors)](#104-inicializadores-estáticos-static-constructors)
-  - [10.5. Instanciación y buenas prácticas para records y structs](#105-instanciación-y-buenas-prácticas-para-records-y-structs)
-  - [10.6. API fluida (fluent pattern)](#106-api-fluida-fluent-pattern)
-  - [10.7. Builder](#107-builder)
-  - [10.8. Fachada (facade)](#108-fachada-facade)
-  - [10.9. Composición e inyección de dependencias por constructor](#109-composición-e-inyección-de-dependencias-por-constructor)
+- [11. Patrones básicos de diseño orientados a objetos](#11-patrones-básicos-de-diseño-orientados-a-objetos)
+  - [11.1. Singleton](#111-singleton)
+  - [11.2. Lazy o perezoso](#112-lazy-o-perezoso)
+  - [11.3. Métodos fábrica (factory methods / static creators)](#113-métodos-fábrica-factory-methods--static-creators)
+  - [11.4. Inicializadores estáticos (static constructors)](#114-inicializadores-estáticos-static-constructors)
+  - [11.5. Instanciación y buenas prácticas para records y structs](#115-instanciación-y-buenas-prácticas-para-records-y-structs)
+  - [11.6. API fluida (fluent pattern)](#116-api-fluida-fluent-pattern)
+  - [11.7. Builder](#117-builder)
+  - [11.8. Fachada (facade)](#118-fachada-facade)
+  - [11.9. Composición e inyección de dependencias por constructor](#119-composición-e-inyección-de-dependencias-por-constructor)
 
 
 
-# 10. Patrones básicos de diseño orientados a objetos
+# 11. Patrones básicos de diseño orientados a objetos
 
 > 💡 **Punto de partida:** Si en una receta de cocina repites siempre los mismos pasos para hacer un bizcocho, terminas memorizando la receta: eso es un patrón. En software pasa igual: los **patrones de diseño** son soluciones probadas a problemas comunes, escritas una vez y reutilizadas mil. En este punto aprenderás los patrones básicos que usarás en todos tus proyectos.
 
@@ -26,7 +26,7 @@ En este punto aprenderás los patrones fundamentales para construir objetos: Sin
 - Agrupar subsistemas complejos tras una Fachada
 - Aplicar la composición con inyección de dependencias por constructor
 
-## 10.1. Singleton
+## 11.1. Singleton
 
 El **Singleton** asegura que solo haya **una instancia** de una clase en todo el programa, y que todos accedan a ella por un único punto. Es como el único servidor de correos de una oficina: todos los departamentos usan el mismo.
 
@@ -75,7 +75,7 @@ public sealed class Config
 
 > ⚠️ **Advertencia:** Úsalo con moderación: un Singleton global complica los tests (su estado vive entre pruebas). En proyectos con inyección de dependencias se registra como "una sola instancia" en el contenedor, sin código Singleton a mano.
 
-## 10.2. Lazy o perezoso
+## 11.2. Lazy o perezoso
 
 El patrón **lazy** retrasa la creación de un objeto hasta que se necesite de verdad. Optimiza recursos: si el objeto nunca se usa, nunca se crea, ahorrando tiempo y memoria. Es especialmente útil cuando la creación es costosa.
 
@@ -110,7 +110,7 @@ public class RecursoCostoso
 
 📌 **Ejemplo real:** Una app de edición de imágenes carga el motor de reconocimiento facial solo cuando abres esa función; si nunca la usas, ese motor jamás ocupa memoria. Netflix precarga los reproductores de las series que vas a ver, pero no de las 5.000 que tienes en la lista.
 
-## 10.3. Métodos fábrica (factory methods / static creators)
+## 11.3. Métodos fábrica (factory methods / static creators)
 
 Los **métodos fábrica** encapsulan la lógica de creación de objetos. Con ellos controlas cómo se crean, aplicas validaciones o devuelves distintos tipos según un valor (por ejemplo, un enum).
 
@@ -146,7 +146,7 @@ public class Usuario
 
 > 💡 **Consejo:** Si ves `new` por todas partes queriendo centralizar reglas de creación, toca convertirlo en un método fábrica estático.
 
-## 10.4. Inicializadores estáticos (static constructors)
+## 11.4. Inicializadores estáticos (static constructors)
 
 Los **constructores estáticos** inicializan datos compartidos de la clase antes de que se use cualquier miembro, y se ejecutan una sola vez.
 
@@ -169,7 +169,7 @@ Console.WriteLine(ruta); // Imprime: /etc/config
 
 > 📝 **Nota:** Ya viste los constructores estáticos en el punto 6; aquí cuentan como patrón porque resuelven un problema concreto: **inicialización perezosa y segura de datos de clase**.
 
-## 10.5. Instanciación y buenas prácticas para records y structs
+## 11.5. Instanciación y buenas prácticas para records y structs
 
 Para records y structs conviene **preferir la inmutabilidad, inicializar todo al crear el objeto y evitar valores nulos**. Con eso, el objeto nace correcto y ya no cambia.
 
@@ -184,7 +184,7 @@ var p2 = p with { Edad = 31 }; // copia modificada, el original intacto
 
 > 💡 **Truco:** Si un record admite `null` en algún campo, decláralo `string?` explícitamente. La gestión estricta de nulos te obliga a decidirlo, en vez de descubrirlo en producción.
 
-## 10.6. API fluida (fluent pattern)
+## 11.6. API fluida (fluent pattern)
 
 La **API fluida** permite encadenar métodos para configurar objetos de forma cómoda: cada método de configuración devuelve `this`, de modo que la llamada siguiente puede seguir justo detrás.
 
@@ -234,7 +234,7 @@ Console.WriteLine(consulta); // SELECT * FROM Usuarios WHERE Edad > 18
 
 📌 **Ejemplo real:** Entity Framework, Serilog y el propio FluentValidation de .NET se configuran así: `new LoggerConfiguration().WriteTo.Console().CreateLogger()`. La lectura encadenada indica el orden de los pasos.
 
-## 10.7. Builder
+## 11.7. Builder
 
 El **Builder** ayuda a construir objetos complejos paso a paso. Así creas objetos con muchas opciones sin necesidad de constructores con decenas de parámetros ni parámetros opcionales por todas partes.
 
@@ -285,7 +285,7 @@ var persona = new PersonaBuilder()
 
 📌 **Ejemplo real:** Cuando configuras un coche en una web (color, motor, llantas, techo solar), cada paso añade una opción y al final confirmas: eso es un Builder montando un objeto complejo a la vista del usuario.
 
-## 10.8. Fachada (facade)
+## 11.8. Fachada (facade)
 
 La **Fachada** agrupa múltiples operaciones complejas tras una interfaz simple. Encapsula la complejidad y facilita el uso de los subsistemas: el cliente solo llama a un método y la fachada orquesta lo demás.
 
@@ -329,7 +329,7 @@ public class Casa
 
 📌 **Ejemplo real:** Cuando entras a una web con "Iniciar sesión con Google", la fachada de autenticación orquesta validación, token, permisos y registro de sesión detrás de un único botón: tú no ves ni la mitad de los subsistemas que se activan.
 
-## 10.9. Composición e inyección de dependencias por constructor
+## 11.9. Composición e inyección de dependencias por constructor
 
 La composición facilita la **inyección de dependencias**: en lugar de fabricar dentro los objetos que tu clase necesita, se los pasas por el constructor. Así el código es más flexible, más fácil de cambiar y de testear.
 
