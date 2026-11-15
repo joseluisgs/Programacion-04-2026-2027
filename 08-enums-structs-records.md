@@ -223,6 +223,22 @@ Para decidir con rapidez, esta tabla resume las diferencias:
 - **`struct`:** para valores matemáticos o datos muy pequeños que se crean y destruyen rápido (coordenadas, dinero).
 - **`record`:** para contenedores de datos que solo sirven para transportar información (DTO, respuestas de API).
 
+La decisión, en un árbol: la pregunta clave primero y luego la elección entre `struct` y `record`.
+
+```mermaid
+graph TD
+    Q{"¿Tiene identidad propia?"}
+    Q -->|"Sí: entidades con<br/>vida y comportamiento"| CL["class<br/>usuario, factura, pedido"]
+    Q -->|"No: solo importan los valores"| V{"¿Necesitas igualdad<br/>automática?"}
+    V -->|"Sí: dato de transporte"| RC["record<br/>DTO, respuestas de API"]
+    V -->|"No: valor pequeño"| ST["struct<br/>coordenadas, dinero"]
+    style Q fill:#607D8B,color:#fff
+    style V fill:#607D8B,color:#fff
+    style CL fill:#2196F3,color:#fff
+    style RC fill:#9C27B0,color:#fff
+    style ST fill:#FF9800,color:#fff
+```
+
 > 💡 **Consejo para el examen:** la pregunta clave es *"¿tiene identidad propia?"*. Si dos entidades con los mismos datos pueden ser la misma o no (dos usuarios distintos con el mismo nombre), es `class`. Si solo importan los valores (2 + 2 = 4 sea quien sea), es `struct` o `record`.
 
 ### 8.2.5. Tipos anónimos y tuplas

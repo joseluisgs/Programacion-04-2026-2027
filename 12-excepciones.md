@@ -227,6 +227,20 @@ finally
 }
 ```
 
+El recorrido de los tres bloques, en un esquema: el `finally` está siempre en el camino, con error o sin él.
+
+```mermaid
+graph TB
+    T["try<br/>zona vigilada"] -->|"todo va bien"| F["finally<br/>se ejecuta SIEMPRE"]
+    T -->|"falla"| C["catch<br/>recupera el estado"]
+    C --> F
+    F --> N["El programa sigue"]
+    style T fill:#607D8B,color:#fff
+    style C fill:#FF9800,color:#fff
+    style F fill:#2196F3,color:#fff
+    style N fill:#4CAF50,color:#fff
+```
+
 📌 **Ejemplo real:** Cualquier app que descarga ficheros usa `finally` (o `using`) para cerrar el flujo: aunque la descarga falle, el fichero queda cerrado y no se queda bloqueado en disco.
 
 > 📝 **Nota:** En C# existe además la cláusula `using` (y `using var`), que hace el trabajo del `finally` por ti con los recursos que implementan `IDisposable`: se cierran solos al salir del ámbito.

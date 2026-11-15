@@ -37,6 +37,17 @@ En este punto aprenderás a crear instancias con `new` y sus variantes, a usar l
 
 Crear o **instanciar** un objeto es el proceso de obtener una unidad concreta de una clase. Hay varias formas de hacerlo, y todas acaban en lo mismo: un objeto nuevo en el heap y una referencia en tu variable.
 
+```mermaid
+graph TB
+    A["new Gato()<br/>básico"] --> H["Objeto en el heap<br/>+ referencia en la variable"]
+    B["new Libro { ... }<br/>object initializer"] --> H
+    C["Gato g = new(...)<br/>target-typed new"] --> H
+    style A fill:#2196F3,color:#fff
+    style B fill:#2196F3,color:#fff
+    style C fill:#2196F3,color:#fff
+    style H fill:#4CAF50,color:#fff
+```
+
 ### 5.1.1. `new` y sintaxis básica
 
 Cuando usas `new`, le pides al sistema que cree un objeto nuevo conforme a la definición de su clase. Este es el uso básico:

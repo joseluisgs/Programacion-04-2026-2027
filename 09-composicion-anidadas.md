@@ -48,6 +48,22 @@ var p = new Persona { Nombre = "José" };
 var doc = new Persona.Documento { Tipo = "DNI", Numero = "12345678Z" };
 ```
 
+En un esquema, la clase `Documento` es una caja dentro de la caja `Persona`:
+
+```mermaid
+graph TB
+    subgraph PER["class Persona"]
+        N["Nombre"]
+        subgraph DOC["class Documento (anidada)"]
+            T["Tipo, Numero"]
+        end
+    end
+    U["Uso: new Persona.Documento()"] -.-> DOC
+    style N fill:#2196F3,color:#fff
+    style T fill:#4CAF50,color:#fff
+    style U fill:#607D8B,color:#fff
+```
+
 📌 **Ejemplo real:** En una app de biblioteca, la clase `Prestamo` puede anidar su clase `Devolucion`: un tipo de devolución suelto no tiene sentido sin un préstamo que lo origine.
 
 > 💡 **Consejo:** Las clases anidadas **estáticas** no necesitan referencia a la externa (son como módulos internos); las de **instancia** pueden usar `new Persona.Documento()` y hasta acceder a miembros de la instancia de `Persona`. Elige la estática por defecto: es más simple y no arrastra estado.
@@ -129,6 +145,23 @@ Aunque la herencia es potente, la composición suele ser preferible en muchos di
 | **Menos acoplamiento** | Las clases son más independientes: el coche no necesita saber cómo funciona el motor por dentro, solo cómo encenderlo |
 | **Más fácil de extender** | Añades un motor nuevo sin tocar la clase `Coche` |
 | **Más fácil de testear** | Puedes probar la clase `Motor` por separado antes de usarla en `Coche` |
+
+Las dos relaciones, lado a lado en un diagrama de clases: la flecha de herencia (`<|`) es "es un" y la composición (`*--`) es "tiene un".
+
+```mermaid
+classDiagram
+    class Coche {
+        +Arrancar()
+    }
+    class CocheDeportivo {
+        +ActivarTurbo()
+    }
+    class Motor {
+        +Encender()
+    }
+    Coche <|-- CocheDeportivo : es un
+    Coche *-- Motor : tiene un
+```
 
 📌 **Ejemplo real:** Netflix no hereda de cada tipo de dispositivo para verlo en la tele, el móvil o la consola: **compone** su reproductor con distintos motores de decodificación que puede cambiar sin reescribir la app. Si la herencia hubiera sido la base, cada nuevo dispositivo obligaría a crear una subclase nueva.
 

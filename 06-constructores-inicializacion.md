@@ -139,6 +139,17 @@ var libro1 = new Libro("1984");                        // Autor="Desconocido", P
 var libro2 = new Libro("1984", "Orwell", 328);         // todo completo
 ```
 
+La delegación del encadenamiento, en un esquema: el constructor corto no repite código, se apoya en el largo.
+
+```mermaid
+graph TB
+    S["Libro(titulo)<br/>constructor secundario"] -->|"this(...) delega en"| P["Libro(titulo, autor, paginas)<br/>constructor principal"]
+    P --> O["Objeto completo<br/>con una sola fuente de verdad"]
+    style S fill:#FF9800,color:#fff
+    style P fill:#2196F3,color:#fff
+    style O fill:#4CAF50,color:#fff
+```
+
 📌 **Ejemplo real:** Los formularios de compra online suelen tener "envío estándar" por defecto y "envío exprés" opcional: el segundo construye el pedido completo y el primero delega en él poniendo los valores por defecto. Mismo patrón.
 
 ## 6.6. Constructor estático

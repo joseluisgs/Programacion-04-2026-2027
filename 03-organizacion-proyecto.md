@@ -104,6 +104,24 @@ Console.WriteLine(resultado); // 5
 
 > 💡 **Truco:** Si dudas de dónde sale una clase, mira los `using` del archivo. El compilador sabe de dónde viene porque se lo dice el `using`; si falta, el error es "no se encontró el tipo o el espacio de nombres".
 
+El mapa de los alias, de un vistazo: dos `Persona` distintas conviven sin pisarse porque cada una vive en su namespace, y el alias es el nombre corto con el que las llamas.
+
+```mermaid
+graph TB
+    U["Tu archivo"]
+    subgraph N1["namespace MiAplicacion.Modelos"]
+        P1["class Persona<br/>{ Nombre }"]
+    end
+    subgraph N2["namespace MiAplicacion.Biblioteca"]
+        P2["class Persona<br/>{ Titulo }"]
+    end
+    U -->|"M.Persona<br/>(alias de Modelos)"| P1
+    U -->|"B.Persona<br/>(alias de Biblioteca)"| P2
+    style U fill:#2196F3,color:#fff
+    style P1 fill:#4CAF50,color:#fff
+    style P2 fill:#FF9800,color:#fff
+```
+
 ## 3.3. Soluciones, proyectos y ensamblados
 
 Antes de escribir código conviene tener claro el mapa de carpetas que usarás en todos tus proyectos. Se estructura en tres niveles:
@@ -225,6 +243,21 @@ Al instalar, .NET escribe una referencia en el fichero `.csproj`. Esa línea **e
 <ItemGroup>
   <PackageReference Include="Spectre.Console" Version="0.53.0" />
 </ItemGroup>
+```
+
+El recorrido completo de un paquete, desde el comando hasta tu código:
+
+```mermaid
+graph TB
+    C["dotnet add package Spectre.Console"] --> P["Escribe la referencia<br/>en el .csproj"]
+    P --> R["dotnet restore<br/>(también lo hace build)"]
+    R --> K["Caché local: se descarga<br/>una sola vez"]
+    K --> U["using Spectre.Console;<br/>y a usar sus tipos"]
+    style C fill:#2196F3,color:#fff
+    style P fill:#9C27B0,color:#fff
+    style R fill:#FF9800,color:#fff
+    style K fill:#607D8B,color:#fff
+    style U fill:#4CAF50,color:#fff
 ```
 
 📌 **Ejemplo real:** Rider tiene un panel gráfico de **NuGet** para instalar con un clic (click derecho en el proyecto → Manage NuGet Packages), pero en el ámbito profesional se prefiere la CLI: queda en los *scripts*, en la documentación y en los pipelines de integración continua sin depender de un IDE.

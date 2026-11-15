@@ -74,6 +74,15 @@ Al diseñar un programa para una biblioteca, por ejemplo, te interesarán el tí
 
 > 💡 **Analogía:** Es como mirar un coche por el retrovisor: ves lo necesario para conducir (gasolina, velocidad), no el número de tornillos que sujeta el motor.
 
+La abstracción, en un esquema: del objeto completo solo modelamos lo que importa para nuestro programa.
+
+```mermaid
+graph LR
+    R["Libro completo<br/>papel, portada, tinta, ortografía..."] -->|"abstracción"| M["Nuestro modelo<br/>título, autor, nº de páginas"]
+    style R fill:#607D8B,color:#fff
+    style M fill:#2196F3,color:#fff
+```
+
 ## 1.3. Ocultación
 
 La **ocultación** significa que cada objeto guarda sus secretos: no puedes ver ni modificar directamente sus datos internos, solo acceder a lo que te deja su interfaz pública.
@@ -152,6 +161,20 @@ public class CocheDeportivo : Coche
 
 `CocheDeportivo` no reescribe `Acelerar`: lo hereda y lo usa. Si mañana corriges `Acelerar` en `Coche`, todos los coches deportivos se corrigen a la vez.
 
+La jerarquía del ejemplo, en un esquema: las hijas reutilizan todo lo del padre y solo añaden lo suyo.
+
+```mermaid
+graph TD
+    C["Coche<br/>marca, acelerar(), frenar()"]
+    D["CocheDeportivo : Coche<br/>añade turbo y ActivarTurbo()"]
+    G["Camioneta : Coche<br/>añade capacidad de carga"]
+    C -->|"reutiliza"| D
+    C -->|"reutiliza"| G
+    style C fill:#9C27B0,color:#fff
+    style D fill:#4CAF50,color:#fff
+    style G fill:#4CAF50,color:#fff
+```
+
 📌 **Ejemplo real:** En Glovo, un "pedido express" es un pedido normal al que le añades repartidor prioritario y plazo reducido. En vez de crear un sistema de pedidos desde cero, hereda todo lo que ya hace un pedido y solo añade lo que lo diferencia.
 
 > ⚠️ **Advertencia:** Usa herencia solo cuando exista una relación real de "ES UN" (`CocheDeportivo` es un `Coche`). Si la relación es "TIENE UN" (un coche *tiene* un motor), lo correcto es la **composición**, que verás en el punto 9. Heredar "por si acaso" produce jerarquías imposibles de mantener.
@@ -179,6 +202,23 @@ Console.WriteLine(b.Descripcion()); // Coche ... con turbo
 
 Las dos líneas de `Descripcion()` son idénticas en el programa, pero salen respuestas distintas: eso es polimorfismo. El día que añadas un `Camioneta : Coche`, tu código de llamada **no cambia**: sigue funcionando.
 
+El mismo mensaje llegando a tres objetos distintos, en un esquema:
+
+```mermaid
+graph TD
+    P["La caja llama:<br/>Pagar(importe)"]
+    T["PagoTarjeta<br/>cobra a la tarjeta"]
+    B["PagoPayPal<br/>descuenta del saldo"]
+    Z["PagoBizum<br/>envía al móvil"]
+    P --> T
+    P --> B
+    P --> Z
+    style P fill:#9C27B0,color:#fff
+    style T fill:#2196F3,color:#fff
+    style B fill:#2196F3,color:#fff
+    style Z fill:#2196F3,color:#fff
+```
+
 📌 **Ejemplo real:** Las formas de pago de cualquier tienda online llaman al mismo método `Pagar(importe)`, pero con tarjeta, PayPal o Bizum cada uno ejecuta su propio código. La caja no sabe ni tiene que saber cómo paga cada cliente.
 
 > 💡 **Consejo:** Si estás escribiendo un `if` o un `switch` que comprueba el tipo de un objeto para decidir qué hacer (`if (x is Coche)...`), casi siempre estás a punto de sustituirlo por polimorfismo. Es la señal de que toca `virtual`/`override`.
@@ -188,6 +228,22 @@ Las dos líneas de `Descripcion()` son idénticas en el programa, pero salen res
 La **modularidad** es la práctica de dividir un programa en partes independientes y reutilizables llamadas módulos. Cada módulo encapsula una funcionalidad concreta y se comunica con los demás a través de interfaces bien definidas.
 
 Los objetos, al encapsular estado y comportamiento, son módulos naturales: si el módulo de pagos falla, puedes arreglarlo sin tocar el módulo de pedidos, porque cada uno vive en su sitio y solo se hablan por sus métodos públicos.
+
+Los módulos de una app como Glovo, cada uno en su sitio:
+
+```mermaid
+graph LR
+    subgraph APP["Aplicación"]
+        P["Pedidos"]
+        G["Pagos"]
+        N["Notificaciones"]
+    end
+    P ---|"solo por métodos públicos"| G
+    P --- N
+    style P fill:#2196F3,color:#fff
+    style G fill:#4CAF50,color:#fff
+    style N fill:#FF9800,color:#fff
+```
 
 📌 **Ejemplo real:** Glovo está dividido en módulos: pedidos, restaurantes, repartidores, pagos y notificaciones. Cada equipo de desarrolladores trabaja en su módulo sin pisar el de los demás; si se cae el módulo de pagos, los pedidos siguen visualizándose.
 
@@ -225,16 +281,18 @@ Es muy común confundir estos dos conceptos, y en el examen se nota. Aquí tiene
 - La ocultación **protege**: decide qué lados de la cápsula son transparentes y cuáles opacos.
 
 ```mermaid
-graph TD
-    R["Los 4 pilares de la POO"] --> A["Abstracción<br/>¿Qué modelo?"]
-    R --> E["Encapsulamiento<br/>¿Cómo lo protejo?"]
-    R --> H["Herencia<br/>¿Qué comparto?"]
-    R --> P["Polimorfismo<br/>¿Cómo varía?"]
-    style R fill:#9C27B0,color:#fff
-    style A fill:#4CAF50,color:#fff
-    style E fill:#4CAF50,color:#fff
-    style H fill:#4CAF50,color:#fff
-    style P fill:#4CAF50,color:#fff
+graph TB
+    subgraph ENC["Encapsulamiento: REÚNE"]
+        E1["estado<br/>_marca, _velocidad"] --- E2["comportamiento<br/>Acelerar(), Frenar()"]
+    end
+    subgraph OCU["Ocultación: PROTEGE"]
+        O1["private<br/>el interior, opaco"] --- O2["public<br/>la ventana, transparente"]
+    end
+    ENC ~~~ OCU
+    style E1 fill:#9C27B0,color:#fff
+    style E2 fill:#9C27B0,color:#fff
+    style O1 fill:#607D8B,color:#fff
+    style O2 fill:#4CAF50,color:#fff
 ```
 
 📌 **Ejemplo real:** Una app de streaming encapsula el reproductor de vídeo (todos sus datos y métodos van juntos en una clase) y lo oculta tras unos botones: tú solo ves play, pausa y barra de progreso.

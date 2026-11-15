@@ -103,6 +103,23 @@ p.Edad = 25; // sintaxis de campo, control de método
 
 Las **propiedades** son una de las características más útiles de C#: combinan la sencillez de los campos y la seguridad de los métodos.
 
+Este es el mapa de los cinco tipos de propiedades que verás en este apartado:
+
+```mermaid
+graph LR
+    P["Propiedades<br/>en C#"] --> A["Autoimplementada<br/>{ get; set; }"]
+    P --> B["Solo lectura<br/>{ get; }"]
+    P --> C["init<br/>{ get; init; }"]
+    P --> D["Calculada<br/>=> expresión"]
+    P --> E["Full property<br/>con backing field"]
+    style P fill:#9C27B0,color:#fff
+    style A fill:#4CAF50,color:#fff
+    style B fill:#4CAF50,color:#fff
+    style C fill:#4CAF50,color:#fff
+    style D fill:#4CAF50,color:#fff
+    style E fill:#4CAF50,color:#fff
+```
+
 ### 7.2.1. Propósito y por qué usar propiedades
 
 Permiten exponer la información interna del objeto de forma controlada, pudiendo añadir validación, lógica o notificaciones. El objetivo es crear una interfaz clara y segura para interactuar con el estado del objeto: por fuera parece un campo, por dentro pasa por la lógica que tú decidas.

@@ -45,6 +45,27 @@ El principio de **responsabilidad única** (*Single Responsibility Principle*) d
 - Si tu clase `Usuario` también envía correos electrónicos y se conecta a la base de datos, tiene demasiadas responsabilidades.
 - Divide y vencerás: crea una clase `ServicioCorreo` y una clase `RepositorioUsuario`.
 
+El principio, en un esquema: de una clase con demasiadas responsabilidades a varias, cada una con la suya.
+
+```mermaid
+graph LR
+    subgraph MAL["Una clase con demasiadas responsabilidades"]
+        G["Usuario<br/>datos + correos + BD"]
+    end
+    subgraph BIEN["Una razón para cambiar por clase"]
+        U["Usuario"]
+        S["ServicioCorreo"]
+        R["RepositorioUsuario"]
+    end
+    G -->|"divide"| U
+    G -->|"divide"| S
+    G -->|"divide"| R
+    style G fill:#f44336,color:#fff
+    style U fill:#4CAF50,color:#fff
+    style S fill:#4CAF50,color:#fff
+    style R fill:#4CAF50,color:#fff
+```
+
 📌 **Ejemplo real:** En Netflix, el sistema que recomienda películas no descarga los vídeos: es una clase distinta de la que los sirve. Si mañana cambian el algoritmo de recomendaciones, no tocan nada del reproductor.
 
 ## 13.3. Métodos cortos y enfocados

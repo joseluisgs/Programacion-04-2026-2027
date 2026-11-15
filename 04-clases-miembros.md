@@ -211,6 +211,21 @@ public class Configuracion
 }
 ```
 
+Cada modificador abre un alcance distinto, del más cerrado al más abierto:
+
+```mermaid
+graph LR
+    M["Modificadores<br/>de acceso"] --> A["private<br/>solo la clase"]
+    M --> B["protected<br/>clase y subclases"]
+    M --> C["internal<br/>mismo proyecto"]
+    M --> D["public<br/>todo el programa"]
+    style M fill:#607D8B,color:#fff
+    style A fill:#f44336,color:#fff
+    style B fill:#FF9800,color:#fff
+    style C fill:#2196F3,color:#fff
+    style D fill:#4CAF50,color:#fff
+```
+
 > 💡 **Truco para el examen:** empieza siempre por `private` y solo aumenta la visibilidad si es estrictamente necesario. Es la "regla de oro" del encapsulamiento: si todo es público, cualquier línea puede romper tu objeto.
 
 ## 4.6. Otros modificadores: sealed, const, readonly, static readonly, required
@@ -316,6 +331,24 @@ void CambiarReferencia(ref Persona p)
 
 CambiarReferencia(ref persona1);
 Console.WriteLine(persona1.Nombre); // "Carlos": ahora apunta a un objeto nuevo
+```
+
+Las dos primeras asignaciones, en un esquema: `persona1` y `persona2` son dos nombres para el mismo objeto.
+
+```mermaid
+graph TB
+    subgraph V["Variables (stack)"]
+        V1["persona1"]
+        V2["persona2"]
+    end
+    subgraph H["Objeto (heap)"]
+        O["Persona<br/>Nombre: 'Luis'"]
+    end
+    V1 -->|"misma referencia"| O
+    V2 -->|"misma referencia"| O
+    style V1 fill:#2196F3,color:#fff
+    style V2 fill:#2196F3,color:#fff
+    style O fill:#4CAF50,color:#fff
 ```
 
 📌 **Ejemplo real:** Cuando compartes un documento en Google Docs con un compañero, ambos estáis viendo **el mismo** documento: si él escribe, lo ves tú también. No es una copia, es la misma referencia.
