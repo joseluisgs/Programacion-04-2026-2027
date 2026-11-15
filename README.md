@@ -26,9 +26,9 @@ UD04. Programación Orientada a Objetos. 1DAW. Curso 2026-2027.
 ## Contenido en YouTube
 
 - [Resumen](https://youtu.be/OKxHbl70iAk)
-- [Modificadores, Propiedades y Encapsulamiento](https://youtu.be/-9i5lUud1vc)
-- [Clases y Métodos Estáticos](https://youtu.be/ClbtKfQfp7M)
-- [Enums, Structs y Records](https://youtu.be/gFc1tYTL2uU)
+- [Modificadores, propiedades y encapsulamiento](https://youtu.be/-9i5lUud1vc)
+- [Clases y métodos estáticos](https://youtu.be/ClbtKfQfp7M)
+- [Enums, structs y records](https://youtu.be/gFc1tYTL2uU)
 - [Lista de reproducción](https://www.youtube.com/playlist?list=PLK1PMlIrqj3c)
 
 
