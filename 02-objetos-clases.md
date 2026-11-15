@@ -65,6 +65,31 @@ La interfaz pública de un objeto es el conjunto de métodos y propiedades que o
 
 > 💡 **Analogía:** Un objeto es una nevera: el estado es lo que guarda (comida, temperatura), el comportamiento es lo que hace (enfriar, congelar), la identidad es su número de serie, y la interfaz pública son las puertas y botones que tú usas. Por dentro no ves el compresor: está oculto.
 
+El esquema siguiente resume las cuatro piezas de un objeto como cajas dentro de una caja: las tres primeras viven por dentro y la interfaz es la parte que se asoma al exterior.
+
+```mermaid
+graph TB
+    EXT["Tú / otros objetos"]
+    subgraph OBJ["Objeto: Nevera (una instancia)"]
+        direction TB
+        INT["Interfaz pública: puertas y botones<br/>abrir(), ponerCero()<br/>lo único que se usa desde fuera"]
+        subgraph PINTO["Por dentro: oculto al exterior"]
+            direction TB
+            ID["Identidad: número de serie 0xAF2A<br/>hace única a esta nevera"]
+            EST["Estado: comida, 28 °C<br/>sus datos en este momento"]
+            COM["Comportamiento: Enfriar(), Congelar()<br/>sus métodos"]
+            ID ~~~ EST ~~~ COM
+        end
+        INT ~~~ PINTO
+    end
+    EXT -->|"solo por aquí"| INT
+    style EXT fill:#607D8B,color:#fff
+    style INT fill:#FF9800,color:#fff
+    style ID fill:#9C27B0,color:#fff
+    style EST fill:#2196F3,color:#fff
+    style COM fill:#4CAF50,color:#fff
+```
+
 ## 2.2. Diferencia entre objetos y tipos simples
 
 Antes de crear tus propios objetos, observa que tipos como los números (`int`, `double`) y las cadenas (`char`, `string`) ya existen desde siempre en los lenguajes de programación:
