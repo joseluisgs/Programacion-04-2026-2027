@@ -28,6 +28,17 @@ artifacts/
 
 # Publicaciones
 publish/
+
+# Node / Slidev (npm)
+node_modules/
+.slidev/
+dist/
+*.local
+.npm/
+
+# Agentes (configuración, nunca se sube)
+AGENTS.md
+AUDITORIA.md
 TestResults/
 
 # Contenido multimedia y docs (no subir a git)
