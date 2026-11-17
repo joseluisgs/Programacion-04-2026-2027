@@ -121,7 +121,11 @@ html.dark {
 }
 
 .slidev-layout.default > *:last-child {
-  margin-bottom: auto;
+  /* !important: el wrapper de código trae `margin` (shorthand) con
+     !important de Slidev → sin lo nuestro, el auto de abajo perdía y el
+     contenido se hundía FLOTE ABAJO con un hueco enorme tras el título
+     (bug: "las cosas salen abajo sin centrar"). */
+  margin-bottom: auto !important;
 }
 
 .slidev-layout h1,
