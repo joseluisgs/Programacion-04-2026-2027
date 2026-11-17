@@ -39,6 +39,13 @@ Un objeto se define por tres componentes:
 
 > 💡 **Analogía:** Programar con POO es como construir con piezas de Lego: cada pieza tiene su forma, su función y su nombre, y el programa entero es el modelo que consigues montar con ellas.
 
+> 📝 **Nota: la POO no es "programación orientada a clases".** La POO es un **paradigma**: una manera de modelar el programa en objetos con estado, comportamiento e identidad —no un constructo concreto ni un lenguaje en particular—. Lo que cambia de un lenguaje a otro es **cómo se construyen esos objetos**:
+>
+> - Los lenguajes **con clases** (C#, Java, C++) fabrican cada objeto a partir de una clase —un molde— y, de paso, **tipifican** los objetos: el comprueba que solo uses cada tipo donde corresponde. Las clases encajan con los lenguajes **tipados**, donde la comprobación de tipos ocurre al compilar.
+> - Los lenguajes **con prototipos** (JavaScript, Lua) no tienen clases: un objeto nuevo nace **copiando otro objeto de referencia**, su prototipo. Encajan con los lenguajes **no tipados o de tipado dinámico**, donde la comprobación —si la hay— ocurre al ejecutar.
+>
+> Misma filosofía (objetos que se hablan entre sí), mecanismos distintos para construirlos: por eso, estudiar POO en C# no te ata a C#: el día que toques un lenguaje de prototipos seguirás pensando en objetos, estado, comportamiento e identidad.
+
 Los conceptos de la POO se agrupan en **pilares** y en otros conceptos de apoyo, como ves en el siguiente esquema:
 
 ```mermaid

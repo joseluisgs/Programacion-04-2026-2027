@@ -59,6 +59,8 @@ public class Gato
 
 Aquí `Nombre` y `Edad` son el **estado**, y `Maullar()` es el **comportamiento**. Con `new Gato()` fabricas un objeto concreto a partir de ese molde.
 
+**La clase es, además, un mecanismo de tipificación de los objetos.** Al escribir `class Gato` no solo defines el molde: creas un **tipo nuevo** para el compilador, y a partir de ahí él usa ese tipo para comprobar las operaciones —que solo guardes en una variable `Gato` lo que hayas creado con `new Gato()`, que a un método `Gato` solo le pases un `Gato`—. Dos clases distintas son **dos tipos distintos** aunque tengan exactamente los mismos campos, así que el compilador no deja mezclarlas alegremente: eso es tipificar tus objetos, el mismo motivo del "¿por qué tipificar los objetos?" de la 2.3.
+
 > 📝 **Nota:** Una clase puede tener tanto atributos como métodos, y también otros miembros (propiedades, eventos, constructores) que iremos añadiendo punto a punto.
 
 ## 4.2. Estado definido por propiedades
