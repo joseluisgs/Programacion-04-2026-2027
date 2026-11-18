@@ -173,7 +173,7 @@ layout: section
 
 ---
 
-## ¿Qué es la programación orientada a objetos?
+## 💡 ¿Qué es la programación orientada a objetos?
 
 La POO es una forma de pensar y escribir programas inspirada en el mundo real: todo está formado por "cosas" (objetos) con características y comportamientos propios, que se hablan entre sí.
 
