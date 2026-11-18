@@ -135,7 +135,7 @@ layout: section
 
 # Conceptos y principios de la POO
 
-<div class="opacity-70">Qué es la POO, sus cuatro pilares y los conceptos que la completan</div>
+<div class="opacity-70">Qué es la POO y sus cuatro pilares</div>
 
 ---
 
@@ -686,7 +686,7 @@ layout: section
 
 # Objetos y clases
 
-<div class="opacity-70">Identidad, estado y comportamiento, la clase como molde y dónde vive cada objeto</div>
+<div class="opacity-70">Identidad, estado y comportamiento</div>
 
 ---
 
@@ -1106,7 +1106,7 @@ layout: section
 
 # Espacios de nombres y organización del proyecto
 
-<div class="opacity-70">Namespace y using, solución, proyecto y ensamblado, crear y compilar con la CLI y en Rider, y librerías con NuGet</div>
+<div class="opacity-70">Namespaces, proyectos y paquetes</div>
 
 ---
 
@@ -1251,34 +1251,58 @@ graph LR
 
 ---
 
-## 🧱 Solución, proyecto y ensamblado
+## 🧱 Solución y proyecto: el contenedor
 
-Antes de escribir código, ten claro el mapa de carpetas: son tres niveles.
+El mapa de carpetas de cualquier proyecto .NET tiene tres niveles; los dos primeros son el **contenedor** donde escribes el código:
 
-```mermaid
-graph LR
-    SLN["Solución (.slnx)"] --> PRJ1["Proyecto consola (.csproj)"]
-    SLN --> PRJ2["Proyecto librería (.csproj)"]
-    PRJ1 --> ASM1["Ensamblado .exe"]
-    PRJ2 --> ASM2["Ensamblado .dll"]
-    ASM1 --> NS1["Namespace MiApp.UI"]
-    ASM1 --> NS2["Namespace MiApp.Utils"]
-    NS1 --> C1["Clase Program"]
-    NS2 --> C2["Clase Ayudante"]
-    style SLN fill:#9C27B0,color:#fff
-    style PRJ1 fill:#2196F3,color:#fff
-    style PRJ2 fill:#2196F3,color:#fff
-    style ASM1 fill:#FF9800,color:#fff
-    style ASM2 fill:#FF9800,color:#fff
-    style NS1 fill:#607D8B,color:#fff
-    style NS2 fill:#607D8B,color:#fff
-    style C1 fill:#4CAF50,color:#fff
-    style C2 fill:#4CAF50,color:#fff
-```
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+| Nivel | Fichero | Qué es |
+| :--- | :--- | :--- |
+| **Solución** | `.slnx` | Agrupa uno o más proyectos relacionados |
+| **Proyecto** | `.csproj` | Una unidad con sus dependencias y su configuración |
+
+</div>
+<div>
 
 <TipBox type="analogia">
 
-Piensa en una fábrica de muebles: la **solución** es el polígono, cada **proyecto** es una nave y el **ensamblado** es la caja final que sale por la puerta.
+Piensa en una **fábrica de muebles**: la solución es el polígono industrial completo y cada proyecto es una nave con su máquina.
+
+</TipBox>
+
+<TipBox type="nota">
+
+En .NET 10 el formato por defecto es el `.slnx` (XML); si encuentras un `.sln` antiguo, lo migras con `dotnet sln migrate`.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## 📦 Del proyecto al ensamblado
+
+Al compilar, cada proyecto genera su **ensamblado**: la caja final que sale por la puerta. Dentro viven sus namespaces y sus clases:
+
+```mermaid
+graph LR
+    SLN["Solución<br/>(.slnx)"] --> PRJ["Proyecto<br/>(.csproj)"]
+    PRJ --> ASM["Ensamblado<br/>.exe o .dll"]
+    ASM --> NS["Namespaces"]
+    NS --> C["Clases"]
+    style SLN fill:#9C27B0,color:#fff
+    style PRJ fill:#2196F3,color:#fff
+    style ASM fill:#FF9800,color:#fff
+    style NS fill:#607D8B,color:#fff
+    style C fill:#4CAF50,color:#fff
+```
+
+<TipBox type="nota">
+
+El ensamblado lleva el código compilado, los **metadatos** y los recursos. Si el proyecto tiene errores de compilación, **no llega a generarse**.
 
 </TipBox>
 
@@ -1510,6 +1534,754 @@ Los errores habituales al instalar paquetes son siempre los mismos cuatro:
 <div class="mt-3">
 
 **⏭️ ¿Qué viene después?** En el **punto 4** veremos cómo se define una clase en C#: sus miembros, atributos, visibilidad y modificadores de acceso.
+
+</div>
+
+</div>
+</div>
+
+---
+layout: section
+---
+
+<div class="ud-section-number">04</div>
+
+# Clases: definición, atributos, visibilidad y modificadores
+
+<div class="opacity-70">Propiedades, métodos y visibilidad</div>
+
+---
+
+## 4 · Punto de partida
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+<TipBox type="consejo" title="Punto de partida">
+
+Si abres la capucha de una **máquina de café**, verás cables, bombas y sensores que no quieres tocar; tú solo usas la pantalla y el botón. Una **clase** funciona igual: por dentro guarda sus datos y su lógica, y por fuera solo deja ver un panel de mandos.
+
+</TipBox>
+
+</div>
+<div>
+
+<Objetivos
+  :items="[
+    'Definir una clase con sus atributos y métodos siguiendo la nomenclatura PascalCase',
+    'Usar parámetros en la llamada a métodos: por valor, ref, out y argumentos con nombre',
+    'Explicar por qué se usan propiedades en lugar de campos públicos',
+    'Aplicar los modificadores de acceso y distinguir sealed, const, readonly y required',
+    'Usar is y as, y reconocer los tipos por referencia, los nulos y su representación en UML',
+  ]"
+/>
+
+</div>
+</div>
+
+---
+
+## 🧱 Sintaxis básica de una clase
+
+La estructura mínima de una clase es la palabra clave `class`, su nombre en **PascalCase** y un bloque de llaves `{}` con sus miembros. Aquí `Nombre` y `Edad` son el **estado** y `Maullar()` es el **comportamiento**: con `new Gato()` fabricas un objeto concreto a partir de ese molde.
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+public class Gato
+{
+    // Atributos (estado)
+    public string Nombre;
+    public int Edad;
+
+    // Método (comportamiento)
+    public void Maullar()
+    {
+        Console.WriteLine($"{Nombre} está maullando.");
+    }
+}
+```
+
+</div>
+<div>
+
+Al escribir `class Gato` no solo defines el molde: creas un **tipo nuevo** para el compilador, que solo dejará guardar un `Gato` donde toca. Dos clases distintas son **dos tipos distintos** aunque tengan los mismos campos: eso es tipificar tus objetos.
+
+<RealExample app="Mensajería">
+
+Cualquier app de mensajería modela un `Mensaje` como clase: su estado es el texto, el remitente y la hora; su comportamiento es enviarse o archivarse; y su visibilidad decide que nadie desde fuera pueda borrar el texto sin pasar por las reglas de la clase.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## 🖼 La clase, el molde de los objetos
+
+Todo lo que definas dentro de la clase vale para todos los objetos que fabriques con `new`: ese es el molde. Por eso una clase puede tener tanto atributos como métodos, y también otros miembros (propiedades, eventos, constructores) que iremos añadiendo punto a punto.
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+![La clase como molde de los objetos](/objeto-clase.png)
+
+</div>
+<div>
+
+📌 **Ejemplo real:** en una app de reparto, el objeto `Pedido` se define una sola vez como clase, pero la tienda tiene cientos de `Pedido` distintos: todos comparten el mismo molde —texto, hora, estado— y cada uno guarda sus propios datos.
+
+</div>
+</div>
+
+---
+
+## 🎯 El estado vive en propiedades
+
+Las **propiedades** son las que guardan los datos del objeto: permiten leer y modificar el estado de forma segura, y por eso se usan **preferiblemente en lugar de los campos públicos**. Si mañana necesitas validar o proteger el dato, no tienes que cambiar el resto del programa.
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+public class Pelota
+{
+    public string Color { get; set; } = string.Empty;
+}
+```
+
+</div>
+<div>
+
+<TipBox type="advertencia">
+
+Un campo `public string Color;` "funciona" igual, pero deja que cualquiera le ponga cualquier cosa (`Color = null` o `Color = "7"`). La propiedad es el paso previo para controlar eso, como verás en el punto 7.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## 🏃 El comportamiento vive en métodos
+
+Los **métodos** de la clase representan acciones o respuestas: son lo que el objeto *hace*. Se escriben en PascalCase, igual que el nombre de la clase.
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+public class Pelota
+{
+    public string Color { get; set; } = string.Empty;
+
+    public void Botar()
+    {
+        Console.WriteLine("¡La pelota ha botado!");
+    }
+}
+```
+
+</div>
+<div>
+
+<RealExample app="App de reparto">
+
+El objeto `Pedido` tiene métodos como `Cancelar()` o `MarcarComoEntregado()`: nadie de fuera "marca a mano" el estado del pedido; se hace a través de su comportamiento, que aplica las reglas de negocio.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## 🔢 Parámetros: valor, ref, out e in
+
+Cuatro formas de pasar datos a un método: por valor (una copia), `ref` (modifica el original), `out` (el resultado) e `in` (solo lectura). Cada una con su llamada:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+public class Calculadora
+{
+    // 1. Paso por valor: el método recibe una COPIA
+    public int Duplicar(int numero) => numero * 2;
+    // 2. ref: puede MODIFICAR el original
+    public void Redondear(ref double valor)
+        => valor = Math.Round(valor);
+    // 3. out: DEBE asignar el valor antes de terminar
+    public void Dividir(int a, int b,
+                        out int cociente, out int resto)
+    {
+        cociente = a / b;
+        resto = a % b;
+    }
+    // 4. in: pasa por referencia PERO solo lee
+    public double Sumar(in double a, in double b)
+        => ((a++) + b); // Error al reasignar
+}
+```
+
+</div>
+<div>
+
+```csharp
+var calc = new Calculadora();
+
+// Por valor: el original no se entera
+int resultado = calc.Duplicar(5); // 10
+
+// ref: el original SÍ cambia
+double precio = 4.999;
+calc.Redondear(ref precio);         // precio = 5.0
+
+// out: devuelve DOS resultados a la vez (3 y 2)
+calc.Dividir(17, 5, out int cociente, out int resto);
+
+// in: pasa por referencia PERO solo lee
+double total = calc.Sumar(in 2.5, in 3.5); // Error solo lectura
+```
+
+</div>
+</div>
+
+---
+
+## 🏷 Argumentos con nombre y opcionales
+
+Para que quien llame solo indique lo que le interesa, C# admite **parámetros opcionales** y **argumentos con nombre**:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+public void Registrar(string nombre,
+                     string rol = "cliente",
+                     int intentos = 0)
+{
+    // ...
+}
+
+// rol e intentos usan sus valores por defecto
+Registrar("Ana");
+
+// argumento con nombre: salta el intermedio
+Registrar("Luis", intentos: 3);
+```
+
+</div>
+<div>
+
+<RealExample app="Subida de fotos">
+
+Cuando una app te deja subir una foto sin indicar la descripción (parámetro opcional), o escribir solo `descripcion: "playa"` sin tocar el resto (argumento con nombre), están usando estas formas de llamada.
+
+</RealExample>
+
+<TipBox type="truco">
+
+Si un método necesita devolver **varios resultados**, un `out` suele ser más cómodo que crear una clase entera solo para eso.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## 🔐 Visibilidad: qué se ve y qué no
+
+Un **atributo o campo** es una variable interna a la clase. Elegir bien su visibilidad es la esencia del encapsulamiento. Este ejemplo muestra la diferencia entre lo que se ve y lo que no:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+- **Campos privados**: solo se ven dentro de la clase; datos internos que no deben tocarse desde fuera. Suelen llamarse `_miCampo`.
+- **Campos públicos**: visibles desde fuera… ¡evítalos! Mejor expón propiedades con acceso controlado.
+- **Métodos privados**: lógica interna que no debe verse fuera (en PascalCase, como todos).
+- **Métodos públicos**: la interfaz del objeto, lo que otros pueden hacer con él.
+
+</div>
+<div>
+
+```csharp
+public class Caja
+{
+    private string _contenido = string.Empty;
+    public string Tipo { get; set; } = string.Empty;
+
+    // Método privado: lógica interna, invisible fuera
+    private int CalcularPeso() => _contenido.Length * 2;
+
+    // Método público: la puerta de entrada
+    public void Guardar(string item) => _contenido = item;
+}
+
+var miCaja = new Caja();
+miCaja.Tipo = "Madera";             // OK: propiedad pública
+// miCaja._contenido = "Juguetes";   // ERROR: campo privado
+miCaja.Guardar("Juguetes");         // OK: método público
+// miCaja.CalcularPeso();            // ERROR: método privado
+```
+
+</div>
+</div>
+
+---
+
+## 🚪 Modificadores de acceso
+
+Los modificadores de acceso deciden **quién puede ver** cada tipo o miembro:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+| Modificador | ¿Quién tiene acceso? |
+| :--- | :--- |
+| **`public`** | Cualquier código con una referencia al tipo; la interfaz pública |
+| **`internal`** | Solo desde el mismo proyecto o ensamblado |
+| **`private`** | Solo dentro de la propia clase (es el por defecto) |
+| **`protected`** | La clase y sus subclases (herencia) |
+
+</div>
+<div>
+
+```csharp
+public class Configuracion
+{
+    // solo dentro de Configuracion
+    private string _clavePrivada = "1234";
+
+    // para todo el mundo
+    public string NombreUsuario { get; set; } = string.Empty;
+
+    // para este proyecto
+    internal int NivelAcceso { get; set; }
+}
+```
+
+</div>
+</div>
+
+---
+
+## 📏 Cada modificador, un alcance
+
+Cada modificador abre un alcance distinto, del más cerrado al más abierto:
+
+```mermaid
+graph TD
+    M["Modificadores<br/>de acceso"] --> A["private<br/>solo la clase"]
+    M --> B["protected<br/>clase y subclases"]
+    M --> C["internal<br/>mismo proyecto"]
+    M --> D["public<br/>todo el programa"]
+    style M fill:#607D8B,color:#fff
+    style A fill:#f44336,color:#fff
+    style B fill:#FF9800,color:#fff
+    style C fill:#2196F3,color:#fff
+    style D fill:#4CAF50,color:#fff
+```
+
+<TipBox type="truco">
+
+**Para el examen:** empieza siempre por `private` y amplía solo si es imprescindible. Si todo es público, cualquier línea puede romper tu objeto.
+
+</TipBox>
+
+---
+
+## 🧰 Otros modificadores
+
+Además de la visibilidad, C# ofrece modificadores que restringen cómo se usa un tipo o un miembro:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+- **`sealed`**: la clase no se puede heredar.
+- **`const`**: valor fijo en tiempo de compilación; solo para tipos simples.
+- **`readonly`**: solo puede asignarse en la declaración o en el constructor.
+- **`static readonly`**: igual que `readonly` pero compartido por todas las instancias.
+- **`required`** (C# 11+): la propiedad debe establecerse al crear el objeto.
+
+</div>
+<div>
+
+```csharp
+public sealed class Utilidades
+{
+    // fija en compilación
+    public const double Pi = 3.1416;
+
+    // compartida por todas las instancias
+    public static readonly DateTime FechaInicio =
+        DateTime.UtcNow;
+
+    // obligatoria al crear el objeto
+    public required string Nombre { get; set; }
+}
+```
+
+</div>
+</div>
+
+---
+
+## 🧩 Partial: una clase en varios ficheros
+
+El modificador **`partial`** permite dividir una clase en varios ficheros: es útil cuando una parte la genera una herramienta o cuando varios desarrolladores trabajan en la misma clase.
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+// Archivo 1
+public partial class Producto
+{
+    public string Nombre { get; set; } = string.Empty;
+}
+```
+
+</div>
+<div>
+
+```csharp
+// Archivo 2
+public partial class Producto
+{
+    public int Stock { get; set; }
+}
+```
+
+</div>
+</div>
+
+<TipBox type="nota">
+
+Al compilar, ambos ficheros forman **una única clase** `Producto` con sus cuatro miembros. No lo necesitas ahora: basta con reconocerlo — si un día ves `partial class`, es la mitad de una clase que está en otro sitio.
+
+</TipBox>
+
+---
+
+## 🔎 `is` y `as`: comprobar y convertir tipos
+
+El operador **`is`** verifica si un objeto es de un tipo concreto; **`as`** intenta convertirlo devolviendo `null` si no es posible. Son la forma segura de trabajar cuando no sabes qué tipo real lleva una referencia:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+object obj = "Hola Mundo";
+
+// is: comprueba el tipo y deja el valor ya convertido
+if (obj is string mensaje)
+{
+    Console.WriteLine(mensaje); // usa 'mensaje'
+}
+
+// as: si no puede convertir, devuelve null
+string? texto = obj as string;
+if (texto is not null)
+{
+    Console.WriteLine(texto);
+}
+```
+
+</div>
+<div>
+
+<RealExample app="Visor de archivos">
+
+Cuando tu app arrastra un archivo y no sabe si es imagen o vídeo, comprueba el tipo antes de decidir qué reproductor abrir. Si no encaja, `as` devuelve `null` y la app muestra un mensaje amable en vez de romperse.
+
+</RealExample>
+
+<TipBox type="consejo">
+
+`is` es preferible a `try { (Tipo)x } catch { }`: es más limpio y no lanza excepciones. Si solo necesitas comprobar, usa `is`; si necesitas el valor convertido, combínalo: `if (obj is string s)`.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## 🔗 Las clases son tipos por referencia
+
+Las clases en C# son **tipos por referencia**: al asignar un objeto a otra variable, ambas apuntan **al mismo objeto**. Si lo modificas por una variable, el cambio se ve desde la otra:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+public class Persona
+{
+    public string Nombre { get; set; } = string.Empty;
+}
+var persona1 = new Persona { Nombre = "Ana" };
+var persona2 = persona1; // MISMO objeto
+persona2.Nombre = "Luis";
+
+Console.WriteLine(persona1.Nombre); // "Luis": lo ven las dos
+
+void CambiarReferencia(ref Persona p)
+{
+    p = new Persona { Nombre = "Carlos" };
+}
+
+CambiarReferencia(ref persona1);
+Console.WriteLine(persona1.Nombre); // "Carlos": objeto nuevo
+```
+
+</div>
+<div>
+
+<RealExample app="Google Docs">
+
+Cuando compartes un documento con un compañero, ambos estáis viendo **el mismo** documento: si él escribe, lo ves tú también. No es una copia, es la misma referencia.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## 🏗 Dos variables, un mismo objeto
+
+Las dos primeras asignaciones, en un esquema: `persona1` y `persona2` son dos nombres para el mismo objeto.
+
+```mermaid
+graph LR
+    subgraph V["Variables (stack)"]
+        V1["persona1"]
+        V2["persona2"]
+    end
+    subgraph H["Objeto (heap)"]
+        O["Persona<br/>Nombre: 'Luis'"]
+    end
+    V1 -->|"misma referencia"| O
+    V2 -->|"misma referencia"| O
+    style V1 fill:#2196F3,color:#fff
+    style V2 fill:#2196F3,color:#fff
+    style O fill:#4CAF50,color:#fff
+```
+
+<TipBox type="advertencia">
+
+Es la causa número uno de "efectos secundarios" raros en los principiantes: modificas una variable "por casualidad" y cambian otras. Verás el stack y el heap en el punto 2 y cómo dominarlo en el punto 5.
+
+</TipBox>
+
+---
+
+## 💤 Objetos nulos: apuntar a nada
+
+Una referencia puede valer `null`: **no apunta a ningún objeto**. Acceder a los miembros de un objeto nulo provoca `NullReferenceException` y el programa se para. Para protegerte, comprueba la referencia o usa el acceso seguro `?.`:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+Persona? persona = null;
+
+// Opción 1: comprobación explícita
+if (persona is not null)
+{
+    Console.WriteLine(persona.Nombre);
+}
+else
+{
+    Console.WriteLine("La persona es nula.");
+}
+
+// Opción 2: acceso seguro con ?.
+Console.WriteLine(persona?.Nombre ?? "Sin nombre");
+```
+
+</div>
+<div>
+
+<RealExample app="Mensajería">
+
+Cuando la app no puede cargar tu lista de contactos y muestra "sin contactos" en vez de cerrarse en bandeja, está comprobando referencias `null` antes de usarlas.
+
+</RealExample>
+
+<TipBox type="nota">
+
+La **gestión estricta de nulos** está activada en todos los proyectos (`Nullable enable`): el compilador te avisa con un warning cada vez que te olvides de comprobar una referencia.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## 📐 UML: leer y escribir la visibilidad
+
+Para diseñar software usamos el lenguaje visual **UML**: es vital saber leer y escribir la visibilidad de los miembros sin mirar el código.
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+| Visibilidad | Símbolo UML | Modificador C# |
+| :--- | :---: | :--- |
+| **Público** | `+` | `public` |
+| **Privado** | `-` | `private` |
+| **Protegido** | `#` | `protected` |
+| **Interno** | `~` | `internal` |
+
+Fíjate en que `_nombre` y `_edad` llevan `-` (privados) y `Nombre`, `Edad` y `Maullar` llevan `+` (públicos): el diagrama dice **exactamente lo mismo que el código**.
+
+</div>
+<div>
+
+```mermaid
+classDiagram
+    class Gato {
+        -string _nombre
+        -int _edad
+        +string Nombre
+        +int Edad
+        +Maullar() void
+        -Digerir() void
+    }
+```
+
+</div>
+</div>
+
+---
+
+## 🏦 Ejemplo completo: una clase bien diseñada
+
+Este ejemplo reúne lo esencial del punto: encapsulamiento, visibilidad y una propiedad con validación. Los métodos públicos (`Depositar`, `Retirar`) son los únicos que tocan el saldo:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+public class CuentaBancaria
+{
+    private decimal _saldo;
+
+    public decimal Saldo
+    {
+        get => _saldo;          // getter público
+        private set             // setter privado
+        {
+            if (value < 0)
+                throw new ArgumentException(
+                    "El saldo no puede ser negativo");
+            _saldo = value;
+        }
+    }
+}
+```
+
+</div>
+<div>
+
+```csharp
+var cuenta = new CuentaBancaria("ES123456789", 1000);
+cuenta.Depositar(500);           // OK
+cuenta.Retirar(200);             // OK
+Console.WriteLine(cuenta.Saldo); // 1300
+
+// IMPOSIBLE por el encapsulamiento:
+// cuenta.Saldo = -100;  // setter privado
+// cuenta._saldo = 0;    // campo privado
+```
+
+<TipBox type="analogia">
+
+**El banco:** la cuenta es una caja fuerte; el saldo está dentro, protegido. Tú solo usas los métodos públicos, que aplican las reglas: no puedes meter dinero negativo ni sacarlo directamente.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## 🔒 El flujo del encapsulamiento
+
+El flujo de acceso a ese encapsulamiento, en un esquema:
+
+```mermaid
+graph LR
+    U["Usuario externo"] --> P["Propiedades y métodos<br/>(+ público)"]
+    P -->|"Validación y control"| C["Campos internos<br/>(- privado)"]
+    U -.->|"No permitido"| C
+    style U fill:#2196F3,color:#fff
+    style P fill:#4CAF50,color:#fff
+    style C fill:#f44336,color:#fff
+```
+
+<TipBox type="nota">
+
+Los modificadores de acceso no son para esconder información, son para **evitar accidentes**: si todo fuera público, cualquier línea podría escribir `cuenta.Saldo = -99999999`.
+
+</TipBox>
+
+---
+
+## 🔑 Propiedades frente a campos públicos
+
+Pregunta típica de examen: **¿por qué usar propiedades en lugar de campos públicos?** La respuesta cabe en una tabla:
+
+| | **Campo público** | **Propiedad** |
+| :--- | :--- | :--- |
+| **Acceso** | Cualquiera lo cambia | Se controla desde la clase |
+| **Validación** | No admite | Sí, dentro del `set` |
+| **Solo lectura** | No es posible | Sí, si solo tiene `get` |
+
+<TipBox type="truco">
+
+**Truco del examen:** las propiedades dan **control** (validación, solo lectura, lógica) y un campo público se modifica libremente. Además, las propiedades participan en la **reflexión** y en el ***data binding***.
+
+</TipBox>
+
+---
+
+## Resumen del punto 4
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+| Concepto | Descripción |
+|----------|-------------|
+| **Clase** | Molde del estado (propiedades) y el comportamiento (métodos) |
+| **PascalCase** | Nomenclatura de clases, propiedades y métodos |
+| **`public` / `private`** | Visible para todos / solo en la clase (por defecto) |
+| **`internal` / `protected`** | Solo en el ensamblado / en la clase y sus hijas |
+| **`is` / `as`** | Comprobar el tipo / convertir devolviendo `null` si no encaja |
+| **Tipos por referencia** | Dos variables pueden apuntar al mismo objeto |
+| **UML** | `+` público, `-` privado, `#` protegido, `~` interno |
+
+</div>
+<div>
+
+<ConceptCard icon="✅" title="Buenas prácticas" accent="green">
+
+- Empezar por `private` y ampliar solo si es imprescindible
+- Propiedades en lugar de campos públicos para validar
+- PascalCase en clases y métodos; `_camelCase` en campos
+- Comprobar con `is not null` o acceder con `?.`
+
+</ConceptCard>
+
+<div class="mt-3">
+
+**⏭️ ¿Qué viene después?** En el **punto 5** veremos cómo se crean y se usan los objetos: instanciación, referencias, igualdad entre objetos y el método `ToString`.
 
 </div>
 

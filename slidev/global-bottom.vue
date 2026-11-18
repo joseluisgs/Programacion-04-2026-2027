@@ -32,17 +32,55 @@ function ajustarMermaid(host: Element): void {
   });
   // El SVG sale con display:inline (defecto) y la línea de texto le añade
   // ~6px de espacio bajo la línea de base → el host se pasa y se corta.
-  // En bloque desaparece ese gap.
+  // En bloque desaparece ese gap. Además lo centramos: los diagramas
+  // estrechos se quedaban pegados a la izquierda con un hueco enorme.
   if (svg.style.display !== 'block') svg.style.display = 'block';
-  const alto = svg.clientHeight;
-  if (!alto) return; // aún no se ha pintado
+  if (svg.style.marginInline !== 'auto') svg.style.marginInline = 'auto';
+
+  /* --------------------------------------------------------------
+     Cálculo ESTABLE: nunca a partir del tamaño actual del SVG (que
+     ya lleva nuestro propio estilo) sino del viewBox y de la caja del
+     host. Así la segunda pasada calcula lo MISMO y no vuelve a
+     escribir: si no, el observador dispara otra pasada → bucle
+     infinito → el navegador se queda colgado.
+     -------------------------------------------------------------- */
+  const vb = (svg as SVGSVGElement).viewBox?.baseVal;
+  const vbW = vb?.width || 0;
+  const vbH = vb?.height || 0;
+  if (!vbW || !vbH) return;
+  const ratio = vbW / vbH;
+
+  const hostW = host.clientWidth;
+  if (!hostW) return; // aún no se ha pintado
+
   const maxCss = parseFloat(getComputedStyle(host).maxHeight) || RESERVA_ALTO;
-  // El host es hijo de un flex: el contenedor lo ENCOGE cuando no cabe en el
-  // hueco que queda, así que el tope real es su alto ACTUAL. Si limitamos a
-  // max-height (350) y el host solo tiene 327, el SVG se pasa y se corta.
-  const tope = Math.min(maxCss, host.clientHeight || maxCss);
-  if (alto <= tope + 1) return; // ya cabe: no tocar (nunca agrandar)
-  svg.style.maxWidth = Math.floor((svg.clientWidth * tope) / alto) + 'px';
+  let tope = maxCss;
+
+  const cont = host.parentElement;
+  if (cont && getComputedStyle(cont).display.includes('flex')) {
+    // Hueco libre real en el contenedor (sin tocar los márgenes del host).
+    let libre = cont.clientHeight;
+    for (const h of Array.from(cont.children)) {
+      if (h === host) continue;
+      const hs = getComputedStyle(h);
+      libre -= h.offsetHeight + (parseFloat(hs.marginTop) || 0) + (parseFloat(hs.marginBottom) || 0);
+    }
+    const ms = getComputedStyle(host);
+    libre -= (parseFloat(ms.marginTop) || 0) + (parseFloat(ms.marginBottom) || 0);
+    // OJO: NUNCA usar la caja del host como límite: su alto depende del SVG
+    // que acabamos de encoger → se retroalimenta y el diagrama se queda
+    // clavado en el mínimo (bug: "diagrama enanito"). `libre` ya es estable.
+    tope = Math.max(40, Math.min(maxCss, libre));
+  }
+
+  const ancho = Math.max(40, Math.min(hostW, Math.floor(tope * ratio)));
+  const alto = Math.floor(ancho / ratio);
+  // Escritura SOLO si el valor cambió (evita el bucle de mutaciones).
+  if (svg.style.width !== ancho + 'px') {
+    svg.style.width = ancho + 'px';
+    svg.style.height = alto + 'px';
+    svg.style.maxWidth = ''; // limpia restos de versiones anteriores
+  }
 }
 
 function barrerMermaid(): void {
