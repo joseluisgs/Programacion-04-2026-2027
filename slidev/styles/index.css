@@ -569,6 +569,14 @@ html.dark .ud-highlight {
   margin-top: 0;
 }
 
+/* Diagrama casi cuadrado (árbol de 6 hojas: pilares de la POO): a 424px de
+   columna medía 386px de alto y se cortaba al ENTRAR en la slide (el JS de
+   ajuste llegaba tarde y solo se arreglaba al refrescar). A 384px cabe SOLO:
+   384 × (559/614) ≈ 350px = el tope del host, sin depender de JS. */
+.slidev-layout .ud-mer-angosto .mermaid {
+  max-width: 384px;
+}
+
 /* Separación entre bloques apilados dentro de la misma columna */
 .slidev-layout .ud-window:not(:first-child),
 .slidev-layout .ud-real:not(:first-child),

@@ -23,6 +23,13 @@ function ajustarMermaid(host: Element): void {
   const raiz = (host as Element & { shadowRoot: ShadowRoot | null }).shadowRoot;
   const svg = raiz?.querySelector('svg');
   if (!svg) return;
+  // Borde fino de marca en los clusters, sin sombra: se fija en línea para
+  // que gane siempre a cualquier regla inyectada por el look de Mermaid.
+  raiz.querySelectorAll<SVGRectElement>('.cluster rect').forEach((r) => {
+    if (r.style.stroke !== '#7289da') r.style.stroke = '#7289da';
+    if (r.style.fill !== 'transparent') r.style.fill = 'transparent';
+    if (r.style.filter !== 'none') r.style.filter = 'none';
+  });
   // El SVG sale con display:inline (defecto) y la línea de texto le añade
   // ~6px de espacio bajo la línea de base → el host se pasa y se corta.
   // En bloque desaparece ese gap.

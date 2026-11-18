@@ -11,13 +11,19 @@ export default (): MermaidConfig => ({
   theme: 'default',
   startOnLoad: false,
   securityLevel: 'loose',
+  // 'classic': bordes FINOS y sin sombra. El look por defecto ('neo' desde
+  // mermaid 11) pinta nodos y clusters con borde morado + drop-shadow
+  // (bug: "los diagramas tienen bordes raros").
+  look: 'classic',
   flowchart: {
     useMaxWidth: true,
     htmlLabels: true,
     curve: 'basis',
-    // Compacto: los diagramas ocupan menos alto y no llegan al pie
-    nodeSpacing: 25,
-    rankSpacing: 35,
+    // Compacto: los diagramas tienen que caber SOLOS por debajo del tope
+    // del host (350px) sin depender del JS de ajuste (si no, al entrar en
+    // la slide se ve cortado hasta que refrescas).
+    nodeSpacing: 6,
+    rankSpacing: 24,
     padding: 4,
   },
   sequence: {
@@ -40,5 +46,9 @@ export default (): MermaidConfig => ({
     // pequeños (bug: "nodos con texto de 8px")
     fontSize: '19px',
     fontFamily: "'Ubuntu', 'Segoe UI', system-ui, sans-serif",
+    // Subgraf sin fondo (quejado en la 18) pero SÍ con borde fino de marca:
+    // caja limpia, sin relleno gris ni sombra
+    clusterBkg: 'transparent',
+    clusterBorder: '#7289da',
   },
 })
