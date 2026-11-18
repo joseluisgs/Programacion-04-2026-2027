@@ -277,7 +277,7 @@ La **abstracción** consiste en fijarnos solo en las características importante
 
 Al diseñar el catálogo de una **biblioteca**, te interesan el título, el autor y el número de páginas; probablemente no importe el tipo de papel ni el color de la portada. Con abstracción, lo tienes en una tarde.
 
-<TipBox type="analogía">
+<TipBox type="analogia">
 
 Es como mirar un coche por el **retrovisor**: ves lo necesario para conducir —gasolina, velocidad—, no el número de tornillos que sujeta el motor.
 
@@ -558,7 +558,7 @@ Glovo está dividido en módulos: pedidos, restaurantes, repartidores, pagos y n
 
 </RealExample>
 
-<TipBox type="analogía">
+<TipBox type="analogia">
 
 Es un edificio con habitaciones: si se estropea la cocina, sigues durmiendo en tu dormitorio. Cada módulo tiene su puerta y solo se entra por ella.
 
@@ -708,8 +708,8 @@ Cuando pides una hamburguesa en una app de comida, en pantalla aparece "tu pedid
   :items="[
     'Diferenciar identidad, estado, comportamiento e interfaz pública de un objeto',
     'Distinguir la clase (el molde) de sus instancias (los objetos fabricados)',
-    'Crear objetos con `new` y seguir la referencia que devuelve',
-    'Situar las variables en el stack y los objetos en el heap, y saber qué es `null`',
+    'Crear objetos con new y seguir la referencia que devuelve',
+    'Situar las variables en el stack y los objetos en el heap, y saber qué es null',
   ]"
 />
 
@@ -765,7 +765,7 @@ graph LR
 </div>
 <div>
 
-<TipBox type="analogía">
+<TipBox type="analogia">
 
 Un objeto es una **nevera**: el estado es lo que guarda —comida, temperatura—, el comportamiento lo que hace —enfriar, congelar—, la identidad su número de serie, y la interfaz pública las puertas y botones que tú usas. Por dentro no ves el compresor: está oculto.
 
@@ -948,7 +948,7 @@ graph LR
 
 `gato1` y `gato3` comparten dirección: son el mismo objeto con dos nombres. `gato2` vive en otra dirección: es otra instancia.
 
-<TipBox type="analogía">
+<TipBox type="analogia">
 
 Un objeto es una **casa** y la referencia, su **dirección**. Al escribir `Gato gato1 = new Gato()`, estás construyendo la casa, obteniendo la dirección (`0xAF2A`) y guardándola en tu agenda: la variable `gato1`.
 
@@ -1092,6 +1092,424 @@ Eso es lo que aprenderemos a gestionar como **seguridad ante nulos**: comprobar 
 <div class="mt-3">
 
 **⏭️ ¿Qué viene después?** En el **punto 3** veremos cómo se organiza un proyecto en C#: espacios de nombres, soluciones, proyectos y ensamblados, y cómo crear y compilar uno.
+
+</div>
+
+</div>
+</div>
+
+---
+layout: section
+---
+
+<div class="ud-section-number">03</div>
+
+# Espacios de nombres y organización del proyecto
+
+<div class="opacity-70">Namespace y using, solución, proyecto y ensamblado, crear y compilar con la CLI y en Rider, y librerías con NuGet</div>
+
+---
+
+## 3 · Punto de partida
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+<TipBox type="consejo" title="Punto de partida">
+
+En casa reparto la ropa en cajones y arcones: cada pieza tiene su sitio y nunca la busco debajo de la cama. En un programa pasa igual: si metes todas las clases en un único fichero sin orden, llega un momento en que no sabes dónde está nada.
+
+</TipBox>
+
+</div>
+<div>
+
+<Objetivos
+  :items="[
+    'Definir espacios de nombres con la forma file-scoped y usar using y alias',
+    'Distinguir solución, proyecto y ensamblado, y saber qué archivo es cada uno',
+    'Crear un proyecto con la CLI (dotnet new) y en Rider, y compilarlo y ejecutarlo',
+    'Incorporar una librería de objetos con NuGet y usar sus tipos en tu código',
+  ]"
+/>
+
+</div>
+</div>
+
+---
+
+## 📁 Namespace: la carpeta virtual de tus clases
+
+Un **namespace** (espacio de nombres) es una carpeta virtual que agrupa tipos relacionados: clases, structs, interfaces… Te permite organizar el código y evitar que dos clases con el mismo nombre se mezclen.
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+namespace MiAplicacion.Modelos
+{
+    public class Persona
+    {
+        public string Nombre { get; set; } = string.Empty;
+    }
+}
+```
+
+</div>
+<div>
+
+<RealExample app="Banca digital">
+
+Es como tener los documentos de "Matemáticas" y "Historia" en carpetas distintas: ambos pueden llamarse "Examen.docx" sin entrar en conflicto. En una app de banco, `Banco.Core.Cuenta` y `Banco.Pruebas.Cuenta` conviven sin pisarse.
+
+</RealExample>
+
+<TipBox type="advertencia">
+
+El namespace **no** tiene por qué coincidir con la carpeta física del fichero, aunque es costumbre que sí coincida para encontrar las clases al navegar por el proyecto.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## ✨ File-scoped namespace: la forma moderna
+
+Desde C# 10 existe una forma más concisa: el namespace a nivel de archivo. Se escribe una sola línea con punto y coma y **todo el archivo queda dentro**, sin llaves que abrir ni cerrar:
+
+```csharp
+namespace MiAplicacion.Modelos;
+
+public class Producto
+{
+    public string Nombre { get; set; } = string.Empty;
+}
+```
+
+<TipBox type="consejo">
+
+En esta unidad usaremos siempre la forma *file-scoped* (`namespace X;`), porque es la que pide la norma del proyecto. Si abres un fichero y ves `namespace X;` sin llaves, no es un error: es la sintaxis moderna.
+
+</TipBox>
+
+---
+
+## 🔀 Using y alias: importar sin repetir nombres
+
+La instrucción **`using`** importa otros espacios de nombres al archivo, para usar sus clases sin escribir el nombre completo cada vez. Con un **alias** creas un nombre corto para un tipo o un namespace, y con **`using static`** importas los miembros estáticos de una clase:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+using MiAplicacion.Modelos;
+
+// Ahora puedes escribir simplemente:
+Persona p = new Persona();
+```
+
+</div>
+<div>
+
+```csharp
+using M = MiAplicacion.Modelos;
+using B = MiAplicacion.Biblioteca;
+
+// Ahora puedes distinguirlas por el alias:
+M.Persona a = new M.Persona();
+B.Persona b = new B.Persona();
+
+using static System.Math;
+double resultado = Sqrt(25); // igual que Math.Sqrt(25)
+```
+
+</div>
+</div>
+
+<TipBox type="truco">
+
+Si dudas de dónde sale una clase, mira los `using` del archivo: si falta, el error es "no se encontró el tipo o el espacio de nombres".
+
+</TipBox>
+
+---
+
+## 🗺 Dos `Persona` que no se pisan
+
+Cada `Persona` vive en su namespace y el alias es su nombre corto: así dos clases con el mismo nombre conviven sin conflicto.
+
+```mermaid
+graph LR
+    U["Tu archivo"] -->|"M.Persona<br/>(alias de Modelos)"| P1["namespace Modelos<br/>class Persona<br/>{ Nombre }"]
+    U -->|"B.Persona<br/>(alias de Biblioteca)"| P2["namespace Biblioteca<br/>class Persona<br/>{ Titulo }"]
+    style U fill:#2196F3,color:#fff
+    style P1 fill:#4CAF50,color:#fff
+    style P2 fill:#FF9800,color:#fff
+```
+
+---
+
+## 🧱 Solución, proyecto y ensamblado
+
+Antes de escribir código, ten claro el mapa de carpetas: son tres niveles.
+
+```mermaid
+graph LR
+    SLN["Solución (.slnx)"] --> PRJ1["Proyecto consola (.csproj)"]
+    SLN --> PRJ2["Proyecto librería (.csproj)"]
+    PRJ1 --> ASM1["Ensamblado .exe"]
+    PRJ2 --> ASM2["Ensamblado .dll"]
+    ASM1 --> NS1["Namespace MiApp.UI"]
+    ASM1 --> NS2["Namespace MiApp.Utils"]
+    NS1 --> C1["Clase Program"]
+    NS2 --> C2["Clase Ayudante"]
+    style SLN fill:#9C27B0,color:#fff
+    style PRJ1 fill:#2196F3,color:#fff
+    style PRJ2 fill:#2196F3,color:#fff
+    style ASM1 fill:#FF9800,color:#fff
+    style ASM2 fill:#FF9800,color:#fff
+    style NS1 fill:#607D8B,color:#fff
+    style NS2 fill:#607D8B,color:#fff
+    style C1 fill:#4CAF50,color:#fff
+    style C2 fill:#4CAF50,color:#fff
+```
+
+<TipBox type="analogia">
+
+Piensa en una fábrica de muebles: la **solución** es el polígono, cada **proyecto** es una nave y el **ensamblado** es la caja final que sale por la puerta.
+
+</TipBox>
+
+---
+
+## 🔗 La relación práctica
+
+- Una **solución** puede tener varios proyectos.
+- Cada **proyecto** genera su propio ensamblado y puede tener diferentes namespaces.
+- Un **ensamblado** es el resultado de compilar un proyecto.
+- Los **namespaces** organizan los tipos dentro de los proyectos y pueden coincidir o no con la estructura de carpetas reales.
+
+En el explorador de Rider verás exactamente este mapa: la solución agrupa los proyectos, cada proyecto genera su ensamblado en `bin/` y, dentro, tus clases viven en sus namespaces.
+
+<RealExample app="TiendaDawApi-NetCore">
+
+En la Tienda hay una solución con varios proyectos: la API, la librería de dominio y los tests. Cada uno compila a su propio `.dll` y se comunican entre sí por referencias y namespaces.
+
+</RealExample>
+
+---
+
+## 🖥 Crear y compilar con la CLI
+
+Para crear un programa simple no hace falta más que dos cosas: crear el proyecto y compilarlo. Desde cualquier carpeta, la consola crea un proyecto de consola llamado `MiPrimerPrograma`:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```bash
+# Crear un proyecto de consola en una carpeta nueva
+dotnet new console -n MiPrimerPrograma
+
+# Entrar en la carpeta del proyecto
+cd MiPrimerPrograma
+
+# Compilar (genera el ensamblado en bin/)
+dotnet build
+
+# Compilar y ejecutar en un solo paso
+dotnet run
+
+# Crear una solución e incorporar el proyecto
+dotnet new sln -n MiSolucion
+dotnet sln add MiPrimerPrograma/MiPrimerPrograma.csproj
+```
+
+</div>
+<div>
+
+`dotnet new console` genera el `.csproj` y el `Program.cs` con *Top-Level Statements*, listos para escribir. `dotnet build` comprueba el código y, si no hay errores, crea el ensamblado en `bin/`; `dotnet run` compila (si hace falta) y lo ejecuta.
+
+<RealExample app="Integración continua">
+
+Todo el material de esta asignatura se puede crear y compilar así sin abrir ningún IDE: es exactamente lo que hace un *pipeline* de integración continua en una empresa antes de aprobar una versión.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## 🏍 Crear y compilar en Rider
+
+En Rider el flujo es el mismo, pero con botones:
+
+1. **File → New Solution** (o `Ctrl+Alt+Shift+N`) y eliges **Console Application**.
+2. Rider genera la solución, el `.csproj` y el `Program.cs`.
+3. Escribe tu código en el editor.
+4. Pulsas **Run** (o `Shift+F10`) para compilar y ejecutar; **Build Solution** (`Ctrl+F9`) sin ejecutar.
+
+Da igual dónde lo hagas: el IDE usa exactamente los mismos comandos (`dotnet new`, `dotnet build`, `dotnet run`) que en la CLI. Por eso en el ámbito profesional se prefiere la CLI: funciona en cualquier ordenador sin instalar un IDE.
+
+<TipBox type="consejo">
+
+Si Rider no te compila, mira la pestaña **Errors**: el 90 % de los errores de principiante son de sintaxis. Compilar a menudo te ahorra horas: cuanto antes salte el error, más fácil es encontrarlo.
+
+</TipBox>
+
+---
+
+## 📦 NuGet: el gestor de paquetes
+
+Casi nada se escribe de cero: los programas reales se construyen **encima de librerías** externas que se incorporan como **paquetes**. **NuGet** es el gestor de paquetes de .NET:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```bash
+# Añadir una librería al proyecto actual
+dotnet add package Spectre.Console
+
+# Ver los paquetes instalados y sus versiones
+dotnet list package
+
+# Restaurar paquetes (normalmente lo hace build)
+dotnet restore
+```
+
+</div>
+<div>
+
+Al instalar, .NET escribe la referencia en el `.csproj`: esa línea **es la instalación hecha y versionada**; quien clone el proyecto la restaura solo.
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Spectre.Console"
+                     Version="0.53.0"/>
+</ItemGroup>
+```
+
+<TipBox type="advertencia">
+
+`dotnet add package` se ejecuta **dentro de la carpeta del proyecto**: si lo lanzas donde no toca, el paquete no se añade a ningún sitio.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## 📦 El recorrido de un paquete
+
+El paquete recorre siempre el mismo camino, desde el comando hasta tu código:
+
+```mermaid
+graph LR
+    C["dotnet add package<br/>Spectre.Console"] --> P["Escribe la referencia<br/>en el .csproj"]
+    P --> R["dotnet restore<br/>(también lo hace build)"]
+    R --> K["Caché local: se descarga<br/>una sola vez"]
+    K --> U["using Spectre.Console;<br/>y a usar sus tipos"]
+    style C fill:#2196F3,color:#fff
+    style P fill:#9C27B0,color:#fff
+    style R fill:#FF9800,color:#fff
+    style K fill:#607D8B,color:#fff
+    style U fill:#4CAF50,color:#fff
+```
+
+<RealExample app="Rider y entornos profesionales">
+
+Rider tiene un panel gráfico de NuGet para instalar con un clic (click derecho en el proyecto → Manage NuGet Packages), pero en el ámbito profesional se prefiere la CLI: queda en los *scripts*, en la documentación y en los pipelines de integración continua sin depender de un IDE.
+
+</RealExample>
+
+---
+
+## 📖 Usar una librería en tu código
+
+Instalar el paquete solo te da los tipos: para usarlos, importa su espacio de nombres con `using` y trátalos como cualquier otra clase. Este programa usa `Spectre.Console` junto con clases de la BCL:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+using Spectre.Console;   // librería externa (paquete NuGet)
+
+// Texto con color usando etiquetas [color]...[/]
+AnsiConsole.MarkupLine("[green]Aprobados:[/] 4 de 5");
+
+// Una tabla con bordes y cabeceras
+var tabla = new Table()
+    .Border(TableBorder.Rounded)
+    .AddColumn(new TableColumn("Alumno").Centered())
+    .AddColumn(new TableColumn("Nota").Centered());
+
+tabla.AddRow("Lucía", "7,5");
+tabla.AddRow("Marcos", "4,0");
+AnsiConsole.Write(tabla);
+```
+
+</div>
+<div>
+
+El patrón es **idéntico** al de cualquier clase: `new Table()` crea un objeto, `.AddColumn(...)` llama a sus métodos y `AnsiConsole` agrupa operaciones estáticas. Da igual que la clase la hayas escrito tú o que venga de una librería: la usas igual.
+
+<TipBox type="consejo">
+
+Antes de escribir una utilidad a mano, pregunta: "¿hay un paquete para esto?". Buscar y reutilizar librerías es señal de un profesional, no de pereza.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## ⚠️ Errores comunes al instalar paquetes
+
+Los errores habituales al instalar paquetes son siempre los mismos cuatro:
+
+| Error | Por qué ocurre | Cómo evitarlo |
+| :--- | :--- | :--- |
+| **`NU1101: no se encuentra el paquete`** | Error en el nombre o falta el *restore* | Revisa el nombre y ejecuta `dotnet restore` |
+| **Versión incompatible con el framework** | El paquete no soporta `net10.0` | Comprueba la versión con `dotnet list package` |
+| **Olvidar el `using`** | El paquete está instalado pero no se importa | Añade `using Spectre.Console;` (o el que corresponda) |
+| **Comando en la carpeta equivocada** | Se lanzó fuera de la carpeta del `.csproj` | Entra en la carpeta del proyecto antes de `dotnet add package` |
+
+---
+
+## Resumen del punto 3
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+| Concepto | Descripción |
+|----------|-------------|
+| **Namespace** | Carpeta virtual que agrupa clases y evita conflictos |
+| **File-scoped namespace** | Forma moderna (C# 10+): `namespace X;` sin llaves |
+| **`using`** | Importa un namespace; `using static`, miembros estáticos |
+| **Solución (.slnx)** | Contenedor de proyectos; XML por defecto en .NET 10 |
+| **Proyecto (.csproj)** | Unidad que se compila a un ensamblado |
+| **Ensamblado** | Resultado de compilar: `.exe` ejecutable o `.dll` |
+| **NuGet** | Gestor de paquetes; `dotnet add package` al `.csproj` |
+
+</div>
+<div>
+
+<ConceptCard icon="✅" title="Buenas prácticas" accent="green">
+
+- Namespace que refleje la lógica del proyecto (`MiEmpresa.MiApp.Servicios`)
+- Usar siempre la forma *file-scoped* (`namespace X;`)
+- Compilar a menudo (`dotnet build` o `Ctrl+F9`) para cazar errores pronto
+- Instalar paquetes por CLI desde la carpeta del `.csproj` y fijar su versión
+
+</ConceptCard>
+
+<div class="mt-3">
+
+**⏭️ ¿Qué viene después?** En el **punto 4** veremos cómo se define una clase en C#: sus miembros, atributos, visibilidad y modificadores de acceso.
 
 </div>
 
