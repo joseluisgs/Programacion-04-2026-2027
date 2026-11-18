@@ -32,6 +32,11 @@ UD04. Programación Orientada a Objetos. 1DAW. Curso 2026-2027.
 - [Lista de reproducción](https://www.youtube.com/playlist?list=PLK1PMlIrqj3c)
 
 
+## Presentaciones
+
+- Presentación PDF ([tema claro](presentaciones/ud04-poo-claro.pdf), [tema oscuro](presentaciones/ud04-poo-oscuro.pdf))
+
+
 ## Resultados de aprendizaje y criterios de evaluación
 
 - RA 2: Escribe y prueba programas sencillos, reconociendo y aplicando los fundamentos de la programación orientada a objetos.
