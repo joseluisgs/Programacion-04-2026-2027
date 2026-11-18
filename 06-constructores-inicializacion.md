@@ -12,6 +12,7 @@
   - [6.11. Constructores en structs y records](#611-constructores-en-structs-y-records)
   - [6.12. Manejo de errores en constructores](#612-manejo-de-errores-en-constructores)
   - [6.13. Constructores primarios y secundarios (C# 12+)](#613-constructores-primarios-y-secundarios-c-12)
+  - [6.14. Finalizadores (destructores): casi no se usan, pero existen](#614-finalizadores-destructores-casi-no-se-usan-pero-existen)
 
 
 
@@ -348,6 +349,31 @@ public class Producto(string nombre, decimal precio)
 ```
 
 > 💡 **Consejo:** En este ciclo usamos el constructor primario con **inyección de dependencias** en los servicios (como el patrón de la TiendaDawApi): los parámetros del constructor son las dependencias que la clase necesita para funcionar.
+
+### 6.14. Finalizadores (destructores): casi no se usan, pero existen
+
+Los **finalizadores** —antiguamente llamados **destructores**— son la contraparte del constructor: mientras el constructor se ejecuta al nacer el objeto, el finalizador `~Clase()` lo ejecuta, si llega, **el recolector de basura justo antes de reclamar su memoria**. Existir existen —y conviene saber que existen—, pero en el día a día **casi nunca se escriben**: la memoria ya la gestiona el GC (la 1.8) y los recursos se liberan de forma explícita (el punto 12).
+
+```csharp
+class Animal
+{
+    ~Animal()   // finalizador (antes llamado destructor): sin parámetros y sin modificadores
+    {
+        // limpieza final, si hiciera falta
+    }
+}
+```
+
+Lo esencial de su comportamiento, según la documentación oficial de C#:
+
+- Solo existen en **clases** (nunca en structs) y **uno por clase**; no admiten parámetros ni modificadores de acceso, y no se heredan ni se sobrecargan.
+- **No se pueden llamar**: los invoca solo el GC y **él decide cuándo** —puede que, sencillamente, no los llame nunca—. Además, en .NET 5 y posteriores los finalizadores **no se ejecutan al salir de la aplicación**.
+- No sirven de nada los finalizadores **vacíos** o triviallos: toda clase con finalizador entra en la cola de finalización que el GC tiene que procesar, y eso cuesta de rendimiento.
+- ⚠️ Dentro de un finalizador **solo se tocan recursos no administrados** (ficheros, ventanas, conexiones): los objetos administrados pueden haber desaparecido ya.
+
+📌 **Ejemplo real:** Los recursos que lleva el sistema operativo —ficheros abiertos, conexiones de red, ventanas— no los recoge el GC: para esos, y solo para esos, existe el finalizador, como salvaguarda por si alguien olvida cerrarlos.
+
+> 📝 **Nota: ¿y en la práctica?** El camino profesional no es el finalizador, sino **liberar de forma explícita** con `IDisposable` e `using` (punto 12), que además permite suprimir el finalizador con `GC.SuppressFinalize` para que el GC ni lo encole. Regla práctica: **si no manejas recursos no administrados, no necesitas ni un finalizador**; si los manejas, escribe `Dispose` y deja el finalizador como red de seguridad.
 
 ---
 
