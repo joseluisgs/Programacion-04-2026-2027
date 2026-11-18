@@ -220,7 +220,7 @@ Misma filosofía —objetos que se hablan entre sí—, mecanismos distintos par
 
 ---
 
-## 🏛️ Los pilares y conceptos de la POO
+## 🏗️ Los pilares y conceptos de la POO
 
 Los conceptos de la POO se agrupan en **pilares** y en otros conceptos de apoyo:
 
@@ -569,7 +569,7 @@ Es un edificio con habitaciones: si se estropea la cocina, sigues durmiendo en t
 
 ---
 
-## 🗑️ El recolector de basura: la memoria se gestiona sola
+## 🧹 El recolector de basura: la memoria se gestiona sola
 
 El **recolector de basura** (garbage collector o GC) libera automáticamente la memoria de los objetos a los que ya nadie referencia, evitando fugas y optimizando el rendimiento.
 
@@ -1236,7 +1236,7 @@ Si dudas de dónde sale una clase, mira los `using` del archivo: si falta, el er
 
 ---
 
-## 🗺 Dos `Persona` que no se pisan
+## 🗺️ Dos `Persona` que no se pisan
 
 Cada `Persona` vive en su namespace y el alias es su nombre corto: así dos clases con el mismo nombre conviven sin conflicto.
 
@@ -1308,7 +1308,7 @@ El ensamblado lleva el código compilado, los **metadatos** y los recursos. Si e
 
 ---
 
-## 🔗 La relación práctica
+## ↔️ La relación práctica
 
 - Una **solución** puede tener varios proyectos.
 - Cada **proyecto** genera su propio ensamblado y puede tener diferentes namespaces.
@@ -1325,7 +1325,7 @@ En la Tienda hay una solución con varios proyectos: la API, la librería de dom
 
 ---
 
-## 🖥 Crear y compilar con la CLI
+## 🖥️ Crear y compilar con la CLI
 
 Para crear un programa simple no hace falta más que dos cosas: crear el proyecto y compilarlo. Desde cualquier carpeta, la consola crea un proyecto de consola llamado `MiPrimerPrograma`:
 
@@ -1366,7 +1366,7 @@ Todo el material de esta asignatura se puede crear y compilar así sin abrir nin
 
 ---
 
-## 🏍 Crear y compilar en Rider
+## 🏍️ Crear y compilar en Rider
 
 En Rider el flujo es el mismo, pero con botones:
 
@@ -1619,7 +1619,7 @@ Cualquier app de mensajería modela un `Mensaje` como clase: su estado es el tex
 
 ---
 
-## 🖼 La clase, el molde de los objetos
+## 🖼️ La clase, el molde de los objetos
 
 Todo lo que definas dentro de la clase vale para todos los objetos que fabriques con `new`: ese es el molde. Por eso una clase puede tener tanto atributos como métodos, y también otros miembros (propiedades, eventos, constructores) que iremos añadiendo punto a punto.
 
@@ -1752,7 +1752,7 @@ double total = calc.Sumar(in 2.5, in 3.5); // Error solo lectura
 
 ---
 
-## 🏷 Argumentos con nombre y opcionales
+## 🏷️ Argumentos con nombre y opcionales
 
 Para que quien llame solo indique lo que le interesa, C# admite **parámetros opcionales** y **argumentos con nombre**:
 
@@ -1870,7 +1870,7 @@ public class Configuracion
 
 ---
 
-## 📏 Cada modificador, un alcance
+## 🧭 Cada modificador, un alcance
 
 Cada modificador abre un alcance distinto, del más cerrado al más abierto:
 
@@ -2012,7 +2012,7 @@ Cuando tu app arrastra un archivo y no sabe si es imagen o vídeo, comprueba el 
 
 ---
 
-## 🔗 Las clases son tipos por referencia
+## 👉 Las clases son tipos por referencia
 
 Las clases en C# son **tipos por referencia**: al asignar un objeto a otra variable, ambas apuntan **al mismo objeto**. Si lo modificas por una variable, el cambio se ve desde la otra:
 
@@ -2053,7 +2053,7 @@ Cuando compartes un documento con un compañero, ambos estáis viendo **el mismo
 
 ---
 
-## 🏗 Dos variables, un mismo objeto
+## 🪢 Dos variables, un mismo objeto
 
 Las dos primeras asignaciones, en un esquema: `persona1` y `persona2` son dos nombres para el mismo objeto.
 
@@ -2125,7 +2125,7 @@ La **gestión estricta de nulos** está activada en todos los proyectos (`Nullab
 
 ---
 
-## 📐 UML: leer y escribir la visibilidad
+## 🖊️ UML: leer y escribir la visibilidad
 
 Para diseñar software usamos el lenguaje visual **UML**: es vital saber leer y escribir la visibilidad de los miembros sin mirar el código.
 
@@ -2161,7 +2161,7 @@ classDiagram
 
 ---
 
-## 🏦 Ejemplo completo: una clase bien diseñada
+## 💳 Ejemplo completo: una clase bien diseñada
 
 Este ejemplo reúne lo esencial del punto: encapsulamiento, visibilidad y una propiedad con validación. Los métodos públicos (`Depositar`, `Retirar`) son los únicos que tocan el saldo:
 
