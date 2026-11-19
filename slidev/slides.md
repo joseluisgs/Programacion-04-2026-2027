@@ -2809,6 +2809,629 @@ Si la clase tiene varios campos, se comparan todos en `Equals` y se combinan en 
 </div>
 
 ---
+layout: section
+---
+
+<div class="ud-section-number">06</div>
+
+# Constructores e inicialización
+
+<div class="opacity-70">Nacer con los datos correctos</div>
+
+---
+
+## 6 · Punto de partida
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+<TipBox type="consejo" title="Punto de partida">
+
+Cuando compras un móvil nuevo, de fábrica ya viene configurado: idioma, hora, cuentas de ejemplo. Si te lo entregaran "en blanco y roto", no serviría de nada. Los objetos también: un constructor es el **"ritual de bienvenida"** que garantiza que cada objeto nace con sus datos correctos y listo para usar.
+
+</TipBox>
+
+</div>
+<div>
+
+<Objetivos
+  :items="[
+    'Explicar la función de un constructor y diferenciarlo de un método normal',
+    'Usar constructores por defecto, parametrizados y la sobrecarga con this(...)',
+    'Aplicar constructores estáticos, privados y de copia en sus contextos',
+    'Validar argumentos lanzando excepciones para no crear objetos inválidos',
+    'Emplear parámetros opcionales, argumentos con nombre y constructores primarios',
+  ]"
+/>
+
+</div>
+</div>
+
+---
+
+## 🧭 Propósito de un constructor
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+Un **constructor** es el método que se llama al crear un objeto y fija su estado inicial: una función con el nombre de la clase y **sin tipo de retorno**.
+
+</div>
+<div>
+
+Los constructores obligan al estado inicial: nadie crea un `CuentaBancaria` sin saldo ni un `Pedido` sin cliente.
+
+</div>
+</div>
+
+```mermaid
+graph LR
+    N["new Animal('Rex')"] --> C["Constructor<br/>Animal(string)"]
+    C --> O["Objeto listo<br/>estado inicial correcto"]
+    style N fill:#2196F3,color:#fff
+    style C fill:#FF9800,color:#fff
+    style O fill:#4CAF50,color:#fff
+```
+
+<RealExample app="Instagram">
+
+Cuando Instagram crea tu cuenta, no te deja existir "a medias": el proceso de registro garantiza que haya nombre, usuario y correo desde el primer segundo. Eso es lo que hace un constructor por tu cuenta.
+
+</RealExample>
+
+---
+
+## ⚙️ Constructor por defecto
+
+Si no defines ningún constructor, C# crea uno sin parámetros que inicializa los atributos a sus valores por defecto (`null` para las referencias, `0` para los números, `false` para los booleanos). Este es un ejemplo de clase sin constructores explícitos:
+
+```csharp
+public class Animal
+{
+    public string Nombre { get; set; } = string.Empty; // "" por defecto (no null)
+    public int Edad { get; set; }                       // 0 por defecto
+}
+
+var perro = new Animal(); // usa el constructor por defecto
+```
+
+<TipBox type="advertencia">
+
+En cuanto defines **un** constructor cualquiera, C# deja de ofrecer el por defecto: si luego escribes `new Animal()` sin parámetros, recibirás un error de compilación. Tendrás que definirlo tú si lo necesitas.
+
+</TipBox>
+
+---
+
+## 🎛️ Constructores parametrizados
+
+Los constructores parametrizados permiten pasar información para personalizar el estado al crear el objeto. Así no hay que rellenar los datos a posteriori, campo a campo.
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+public class Animal
+{
+    public string Nombre { get; set; } = string.Empty;
+    public int Edad { get; set; }
+
+    public Animal(string nombre)
+    {
+        Nombre = nombre;
+    }
+}
+
+var perro = new Animal("Rex"); // nace con nombre ya puesto
+```
+
+</div>
+<div>
+
+<RealExample app="Reservas de hotel">
+
+En una app de reservas, crear un `Hotel` sin ciudad ni categoría no tiene sentido; por eso su constructor recibe esos datos obligatorios y el resto de la app puede confiar en que siempre estarán.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## 🔀 Sobrecarga de constructores
+
+Puedes definir varios constructores para permitir distintos modos de inicialización.
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+```csharp
+public class Animal
+{
+    public string Nombre { get; set; } = string.Empty;
+    public int Edad { get; set; }
+
+    // Si nos pasan solo el nombre, la edad será 0 por defecto
+    public Animal(string nombre) : this(nombre, 0) { }
+
+    // Constructor principal (el más completo)
+    public Animal(string nombre, int edad)
+    {
+        Nombre = nombre;
+        Edad = edad;
+    }
+}
+
+var perro = new Animal("Rex");        // edad 0
+var gato = new Animal("Miau", 3);     // edad 3
+```
+
+</div>
+<div>
+
+Con la **sobrecarga**, cada constructor tiene una firma diferente (número o tipo de parámetros), de modo que puedes crear objetos con diferentes niveles de detalle.
+
+<TipBox type="consejo">
+
+Usa `this(...)` para que la sobrecarga **delegue** en el constructor más completo, en vez de repetir el mismo código en cada uno. Así solo hay una fuente de verdad.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## 🔁 Encadenamiento con `this(...)`
+
+El encadenamiento reutiliza lógica y evita errores, como has visto en el ejemplo anterior. Aquí la versión completa con un `Libro`:
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+```csharp
+public class Libro
+{
+    public string Titulo { get; set; } = string.Empty;
+    public string Autor { get; set; } = string.Empty;
+    public int Paginas { get; set; }
+
+    // Constructor secundario: delega en el principal
+    public Libro(string titulo) : this(titulo, "Desconocido", 0) { }
+
+    // Constructor principal
+    public Libro(string titulo, string autor, int paginas)
+    {
+        Titulo = titulo;
+        Autor = autor;
+        Paginas = paginas;
+    }
+}
+```
+
+</div>
+<div>
+
+```csharp
+var libro1 = new Libro("1984"); // Autor="Desconocido", Paginas=0
+var libro2 = new Libro("1984", "Orwell", 328); // todo completo
+```
+
+</div>
+</div>
+
+---
+
+## 🔁 Una sola fuente de verdad
+
+El encadenamiento, en un esquema: el constructor corto delega en el largo.
+
+```mermaid
+graph LR
+    S["Libro(titulo)<br/>constructor secundario"] -->|"this(...) delega en"| P["Libro(titulo, autor, paginas)<br/>constructor principal"]
+    P --> O["Objeto completo<br/>con una sola fuente de verdad"]
+    style S fill:#FF9800,color:#fff
+    style P fill:#2196F3,color:#fff
+    style O fill:#4CAF50,color:#fff
+```
+
+<RealExample app="Compra online">
+
+Los formularios de compra online suelen tener "envío estándar" por defecto y "envío exprés" opcional: el segundo construye el pedido completo y el primero delega en él poniendo los valores por defecto. Mismo patrón.
+
+</RealExample>
+
+---
+
+## 🏁 Constructor estático
+
+Un constructor **`static`** se ejecuta una sola vez, antes de que se use la clase por primera vez, para inicializar datos compartidos por todas sus instancias.
+
+```csharp
+public class Configuracion
+{
+    public static string RutaConfig { get; set; } = string.Empty;
+
+    static Configuracion()
+    {
+        RutaConfig = "/etc/config"; // se ejecuta una única vez
+    }
+}
+```
+
+<TipBox type="nota">
+
+Un constructor estático no tiene parámetros y no puede ser `public`: solo prepara lo que es **de la clase** (datos estáticos), no lo de cada objeto. Lo verás con más detalle en el punto 7, junto a los miembros estáticos.
+
+</TipBox>
+
+---
+
+## 🔒 Constructores privados
+
+Los constructores **`private`** sirven para controlar cómo se instancian los objetos: nadie desde fuera puede hacer `new`, solo la propia clase decide cuántos y cuándo. Es la base de patrones como el **singleton** (una única instancia) o las fábricas.
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+public class Singleton
+{
+    private static Singleton? _instancia;
+
+    private Singleton() { } // nadie puede crearlo desde fuera
+
+    public static Singleton ObtenerInstancia()
+    {
+        // Lazy: se crea solo si hace falta (y solo una vez)
+        _instancia ??= new Singleton();
+        return _instancia;
+    }
+}
+```
+
+</div>
+<div>
+
+<RealExample app="Gestor de conexiones">
+
+Tu app tiene un único gestor de conexión a la base de datos o un único reloj de sistema: si cada módulo pudiera crear el suyo, tendrías diez conexiones abiertas sin querer. El constructor privado impide ese desastre.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## 📋 Constructor de copia
+
+El **constructor de copia** crea una nueva instancia **copiando el estado** de otro objeto.
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+```csharp
+public class Punto
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+
+    // Constructor de copia
+    public Punto(Punto otro)
+    {
+        X = otro.X;
+        Y = otro.Y;
+    }
+}
+
+var p1 = new Punto { X = 5, Y = 10 };
+var p2 = new Punto(p1); // p2 es una COPIA: p2.X = 5, p2.Y = 10
+
+p2.X = 99;
+Console.WriteLine(p1.X); // 5: p1 no se entera del cambio
+```
+
+</div>
+<div>
+
+Permite duplicar objetos **sin compartir la referencia** entre ambos.
+
+<TipBox type="advertencia">
+
+No confundas copia con referencia: `var p3 = p1` hace que apunten al **mismo** objeto; `var p3 = new Punto(p1)` crea uno **nuevo y separado**. Es la misma distinción del punto anterior.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## 🎚️ Parámetros opcionales, named arguments y params
+
+Puedes facilitar distintos modos de uso con parámetros por defecto y argumentos con nombre, igual que en los métodos normales.
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+```csharp
+public class Rectangulo
+{
+    public int Alto { get; set; }
+    public int Ancho { get; set; }
+
+    public Rectangulo(int alto = 10, int ancho = 5)
+    {
+        Alto = alto;
+        Ancho = ancho;
+    }
+}
+
+var r1 = new Rectangulo();              // alto=10, ancho=5
+var r2 = new Rectangulo(ancho: 15);     // alto=10, ancho=15 (argumento con nombre)
+var r3 = new Rectangulo(20);            // alto=20, ancho=5
+```
+
+</div>
+<div>
+
+<RealExample app="Alta de usuario">
+
+Un constructor de `Usuario` con `rol = "cliente"` por defecto deja que la mayoría de registros no tengan que pensarlo, mientras que un administrador lo indica explícitamente con `rol: "admin"`.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## 🧊 Inicialización de campos `readonly`
+
+Los campos **`readonly`** pueden fijarse solo una vez: en la declaración o dentro del constructor. Ayudan a crear objetos inmutables que no se pueden modificar después de ser creados.
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+```csharp
+public class Circulo
+{
+    public readonly double Radio;
+
+    public Circulo(double radio)
+    {
+        Radio = radio;
+    }
+}
+
+var c = new Circulo(5.0);
+// c.Radio = 10.0; // ERROR de compilación: no se puede modificar después
+```
+
+</div>
+<div>
+
+<TipBox type="truco">
+
+`readonly` es tu forma de decir "este dato no cambia jamás" sin necesidad de propiedades complejas. Si alguien intenta tocarlo fuera del constructor, el compilador lo para antes de ejecutar nada.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## 🧬 Constructores en structs y records
+
+Cada tipo tiene sus particularidades:
+
+- **Structs:** debes inicializar **todos** los campos en el constructor; si no defines ninguno, existe uno por defecto que los pone a cero.
+- **Records:** suelen tener constructores posicionales (`record Persona(string Nombre, int Edad)`) y soportan la inicialización con `with` para crear copias modificadas.
+
+```csharp
+// Record con constructor positional
+record Persona(string Nombre, int Edad);
+
+var ana = new Persona("Ana", 30);
+var ana2 = ana with { Edad = 31 }; // copia con un cambio
+```
+
+<RealExample app="Facturación">
+
+Los `record` son ideales para datos inmutables como líneas de factura: `linea with { Cantidad = 2 }` te devuelve una línea nueva sin tocar la original.
+
+</RealExample>
+
+---
+
+## 🚨 Manejo de errores en constructores
+
+Lanza excepciones si los argumentos son inválidos, para asegurar objetos consistentes desde el principio: mejor un error en el `new` que un objeto roto escondido por el programa.
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+```csharp
+public class CuentaBancaria
+{
+    public decimal Saldo { get; private set; }
+
+    public CuentaBancaria(decimal saldoInicial)
+    {
+        if (saldoInicial < 0)
+            throw new ArgumentException("El saldo inicial no puede ser negativo.");
+        Saldo = saldoInicial;
+    }
+}
+
+var cuenta = new CuentaBancaria(-100); // lanza ArgumentException
+```
+
+</div>
+<div>
+
+<RealExample app="Banca online">
+
+Cuando una app de banca online te rechaza un alta con datos incorrectos en el primer paso, es el constructor el que se niega a crear un objeto inválido. Es preferible que falle ahí a que el problema aparezca tres pantallas después.
+
+</RealExample>
+
+<TipBox type="nota">
+
+Las excepciones se estudian en el punto 11.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## ✨ Constructores primarios (C# 12+)
+
+Los **constructores primarios** permiten definir parámetros directamente en la declaración de la clase, simplificando la sintaxis para clases simples. Están disponibles desde C# 12.
+
+```csharp
+public class Persona(string nombre, int edad)
+{
+    public string Nombre { get; } = nombre;
+    public int Edad { get; } = edad;
+}
+
+var p = new Persona("Ana", 30);
+```
+
+---
+
+## ✨ Primarios: inyección de dependencias
+
+Esta forma es ideal para la **inyección de dependencias** y para simplificar clases con campos `readonly`, como este servicio de correo:
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+```csharp
+public class ServicioCorreo(string servidorSmtp, int puerto)
+{
+    private readonly string _servidorSmtp = servidorSmtp;
+    private readonly int _puerto = puerto;
+
+    public void EnviarCorreo(string destinatario, string asunto, string cuerpo)
+    {
+        // Lógica para enviar el correo usando _servidorSmtp y _puerto
+    }
+}
+```
+
+<TipBox type="consejo">
+
+En este ciclo usamos el constructor primario con **inyección de dependencias**: cada parámetro es una dependencia que la clase necesita.
+
+</TipBox>
+
+</div>
+<div>
+
+Los constructores secundarios pueden seguir definiéndose como antes, y pueden llamar al constructor primario usando `this(...)`:
+
+```csharp
+public class Producto(string nombre, decimal precio)
+{
+    public string Nombre { get; } = nombre;
+    public decimal Precio { get; } = precio;
+
+    // Constructor secundario: precio por defecto 0
+    public Producto(string nombre) : this(nombre, 0.0m) { }
+}
+```
+
+</div>
+</div>
+
+---
+
+## 🪦 Finalizadores: casi no se usan
+
+Los **finalizadores** —antiguamente llamados **destructores**— son la contraparte del constructor: mientras el constructor se ejecuta al nacer el objeto, el finalizador `~Clase()` lo ejecuta, si llega, **el recolector de basura justo antes de reclamar su memoria**. Existir existen —y conviene saber que existen—, pero en el día a día **casi nunca se escriben**: la memoria ya la gestiona el GC (la 1.8) y los recursos se liberan de forma explícita (el punto 12).
+
+```csharp
+class Animal
+{
+    ~Animal()   // finalizador (antes llamado destructor): sin parámetros y sin modificadores
+    {
+        // limpieza final, si hiciera falta
+    }
+}
+```
+
+<RealExample app="Sistema operativo">
+
+Los recursos que lleva el sistema operativo —ficheros abiertos, conexiones de red, ventanas— no los recoge el GC: para esos, y solo para esos, existe el finalizador, como salvaguarda por si alguien olvida cerrarlos.
+
+</RealExample>
+
+---
+
+## 🪦 Reglas de los finalizadores
+
+Lo esencial de su comportamiento, según la documentación oficial de C#:
+
+- Solo en **clases** (nunca en structs) y **uno por clase**: sin parámetros.
+- **No se pueden llamar**: los invoca solo el GC y **él decide cuándo**. Además, en .NET 5+ **no se ejecutan al salir de la aplicación**.
+- No sirven de nada los finalizadores **vacíos**: toda clase con finalizador entra en la cola de finalización del GC, y eso cuesta de rendimiento.
+- ⚠️ Dentro de un finalizador **solo se tocan recursos no administrados** (ficheros, ventanas): los administrados pueden haber desaparecido ya.
+
+<TipBox type="nota" title="Nota: ¿y en la práctica?">
+
+Libera los recursos de forma explícita con `IDisposable` e `using` (punto 12): **sin recursos no administrados, no necesitas finalizador**.
+
+</TipBox>
+
+---
+
+## Resumen del punto 6
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+| Concepto | Descripción |
+|----------|-------------|
+| **Constructor** | Método que inicializa el objeto al crearlo |
+| **Por defecto** | Sin parámetros; desaparece si defines otro |
+| **Parametrizado** | Recibe datos: el objeto nace completo |
+| **Sobrecarga** | Firmas distintas; delegan con `this(...)` |
+| **Estático** | Se ejecuta una vez para datos de la clase |
+| **Privado** | Controla la creación: singleton y fábricas |
+| **Copia** | Copia el estado sin compartir referencia |
+| **`readonly`** | Fijable en la declaración o el constructor |
+| **Validación** | Excepciones si los argumentos no son válidos |
+| **Primario (C# 12+)** | Parámetros en la clase; ideal para DI |
+
+</div>
+<div>
+
+<ConceptCard icon="✅" title="Buenas prácticas" accent="green">
+
+- Constructores simples; delega lo largo
+- Mantén los invariantes del objeto
+- Valida los argumentos con excepciones
+- Parametrizados antes que setters después
+
+</ConceptCard>
+
+<div class="mt-3">
+
+**⏭️ ¿Qué viene después?** En el **punto 7**: encapsulación, propiedades completas y miembros estáticos.
+
+</div>
+
+</div>
+</div>
+
+---
 layout: center
 ---
 
