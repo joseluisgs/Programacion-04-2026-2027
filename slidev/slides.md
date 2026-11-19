@@ -2289,6 +2289,526 @@ Pregunta típica de examen: **¿por qué usar propiedades en lugar de campos pú
 </div>
 
 ---
+layout: section
+---
+
+<div class="ud-section-number">05</div>
+
+# Instanciación, referencias, igualdad y ToString
+
+<div class="opacity-70">Crear, comparar y mostrar objetos</div>
+
+---
+
+## 5 · Punto de partida
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+<TipBox type="consejo" title="Punto de partida">
+
+¿Alguna vez has visto **dos fotos de Instagram con el mismo contenido** y has preguntado si es la misma foto o son dos copias? En programación pasa igual con los objetos: dos objetos pueden tener el mismo estado y seguir siendo distintos. En este punto aprenderás a **crearlos, a compararlos correctamente y a convertirlos en texto** para mostrarlos.
+
+</TipBox>
+
+</div>
+<div>
+
+<Objetivos
+  :items="[
+    'Instanciar objetos con new, object initializers, init y target-typed new',
+    'Usar this para resolver ambigüedades y encadenar constructores',
+    'Sobrescribir ToString() y usar la interpolación de cadenas para representar objetos',
+    'Diferenciar identidad (misma referencia) de igualdad (mismo estado)',
+    'Sobrescribir Equals y GetHashCode para comparar objetos por su contenido',
+  ]"
+/>
+
+</div>
+</div>
+
+---
+
+## 📦 Creación e instanciación de objetos
+
+Crear o **instanciar** un objeto es obtener una unidad concreta de una clase.
+
+```mermaid
+graph TB
+    A["new Gato()<br/>básico"] --> H["Objeto en el heap<br/>+ referencia en la variable"]
+    B["new Libro { ... }<br/>object initializer"] --> H
+    C["Gato g = new(...)<br/>target-typed new"] --> H
+    style A fill:#2196F3,color:#fff
+    style B fill:#2196F3,color:#fff
+    style C fill:#2196F3,color:#fff
+    style H fill:#4CAF50,color:#fff
+```
+
+---
+
+## 🆕 `new` y sintaxis básica
+
+Cuando usas `new`, le pides al sistema que cree un objeto nuevo conforme a la definición de su clase. Este es el uso básico:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+var miGato = new Gato();
+miGato.Nombre = "Felix";
+miGato.Edad = 3;
+```
+
+</div>
+<div>
+
+Cada vez que usas `new` se crea una **referencia nueva** en memoria para ese objeto. El objeto se almacena en el heap, y la variable (`miGato`) contiene la referencia a esa ubicación.
+
+<TipBox type="consejo">
+
+`var` es solo azúcar sintáctico: el compilador deduce el tipo (`Gato`). No confundas con `var` de JavaScript, que es de tipo dinámico: aquí el tipo se fija en compilación.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## 📋 Object initializers y propiedades `init`
+
+Los **object initializers** permiten asignar propiedades en el mismo momento de crear el objeto, sin llamadas largas al constructor:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+var miLibro = new Libro { Titulo = "1984", Autor = "Orwell" };
+```
+
+```csharp
+public class Usuario
+{
+    public string Nombre { get; init; } = string.Empty;
+}
+
+var usuario = new Usuario { Nombre = "Marta" }; // OK
+// usuario.Nombre = "Ana"; 
+// ERROR: solo puede fijarse al crearse
+```
+
+</div>
+<div>
+
+Si la propiedad se declara con `init` en lugar de `set`, solo puede establecerse en el initializer o en el constructor: no podrá modificarse después.
+
+<RealExample app="Pedidos">
+
+Los objetos `record` de C# (como los datos de un pedido inmutables) usan `init` para que nadie pueda cambiar un pedido ya creado: así se evitan errores de datos "a medias".
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## ⚡ Target-typed new y cuándo usar cada forma
+
+Desde C# 9 puedes acortar el código indicando el tipo a la izquierda y dejando que el compilador complete el `new`:
+
+```csharp
+Gato miGato = new("Miau", 2); // existe un constructor Gato(string, int)
+```
+
+Es muy legible cuando la variable es de tipo explícito: el código se lee de corrido. Usa **constructores** cuando el valor es obligatorio al crear el objeto, e **initializers** cuando buscas flexibilidad y claridad:
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+```csharp
+// Constructor: no puedes olvidar la edad, es obligatorio
+var gato = new Gato("Felix", 2);
+
+// Initializer: puedes dejar campos sin poner (no recomendado si son importantes)
+var libro = new Libro { Titulo = "1984", Autor = "Orwell" };
+```
+
+</div>
+<div>
+
+<TipBox type="advertencia">
+
+Si el objeto no puede existir sin ciertos datos (un pedido sin cliente no tiene sentido), ese dato va en el **constructor**, no en un initializer opcional. El compilador no te dejará crear el objeto incompleto.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## 🧩 Constructores secundarios con `this`
+
+Puedes definir varios constructores en una clase para las distintas formas de crear objetos. Usa `this(...)` para llamar a otro constructor y evitar repetir código; lo verás en detalle en el punto 6.
+
+```csharp
+public class Coche
+{
+    public string Marca { get; set; } = string.Empty;
+    public string Modelo { get; set; } = string.Empty;
+    public int Año { get; set; }
+
+    // Constructor secundario: delega en el principal
+    public Coche(string marca, string modelo) : this(marca, modelo, 0) { }
+
+    // Constructor principal
+    public Coche(string marca, string modelo, int año)
+    {
+        Marca = marca;
+        Modelo = modelo;
+        Año = año;
+    }
+}
+```
+
+---
+
+## 🎯 `this`: el objeto actual
+
+La palabra clave **`this`** en C# siempre se refiere al **objeto actual**, es decir, la instancia sobre la que se está ejecutando el código. Sirve sobre todo para distinguir los atributos del objeto de los parámetros cuando se llaman igual.
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+public class Punto
+{
+    private int _x;
+
+    public void SetX(int x)
+    {
+        _x = x; // sin ambigüedad: _x es el atributo, 
+                //x es el parámetro
+    }
+
+    // Con this (también válido y más explícito)
+    public void SetXConThis(int x)
+    {
+        this._x = x; // "this._x" es el atributo de la instancia
+    }
+}
+```
+
+</div>
+<div>
+
+Este ejemplo muestra el caso clásico: el parámetro `x` y el atributo `x` con el mismo nombre.
+
+<RealExample app="Registro">
+
+En cualquier formulario de registro, el parámetro `nombre` llega del campo de la pantalla y el atributo `nombre` es el del objeto usuario: `this.nombre = nombre` guarda lo que escribió el usuario dentro de su propio objeto.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## 🔁 Encadenamiento de constructores
+
+Con `this` puedes llamar a otro constructor de la misma clase y reutilizar su lógica en lugar de duplicarla:
+
+```csharp
+public class Persona
+{
+    public string Nombre { get; set; } = string.Empty;
+    public int Edad { get; set; }
+
+    public Persona(string nombre) : this(nombre, 0) { }
+
+    public Persona(string nombre, int edad)
+    {
+        Nombre = nombre;
+        Edad = edad;
+    }
+}
+```
+
+---
+
+## 📤 Pasar `this` como argumento
+
+En métodos, `this` te permite referenciar la instancia actual para modificar datos o llamar a otros métodos de esa instancia, e incluso puedes **pasar `this` como argumento** a otros métodos que necesiten trabajar con el objeto completo.
+
+```csharp
+public class Gato
+{
+    public string Nombre { get; set; } = string.Empty;
+
+    public void RegistrarEn(ClinicaVeterinaria clinica)
+    {
+        clinica.Anotar(this); // paso el objeto completo a otro método
+    }
+}
+```
+
+<TipBox type="nota">
+
+Con las propiedades autoimplementadas (`{ get; set; }`) ya no necesitas `this.nombre = nombre` en los constructores modernos; el encadenamiento y las ambigüedades siguen siendo los usos principales.
+
+</TipBox>
+
+---
+
+## 📝 ToString: tu objeto en texto
+
+Puedes sobrescribir el método `ToString()` en tu clase para devolver una representación legible del objeto:
+
+```csharp
+public class Persona
+{
+    public string Nombre { get; set; } = string.Empty;
+    public int Edad { get; set; }
+
+    public override string ToString() => $"Persona: {Nombre}, {Edad} años";
+}
+```
+
+Ahora, si imprimes el objeto, verás ese texto en consola:
+
+```csharp
+Console.WriteLine(new Persona { Nombre = "Jose", Edad = 20 });
+// Persona: Jose, 20 años
+```
+
+---
+
+## 💡 ¿Por qué sobrescribir `ToString`?
+
+Es muy útil que tus objetos puedan convertirse a texto para mostrar información, depurar o guardarla en un fichero:
+
+<RealExample app="Logs">
+
+Cuando la consola de Windows o un visor de logs muestra un objeto completo en vez de `Namespace.Clase`, alguien ha reescrito `ToString` para que dé información útil. Sin ese override, solo verías el nombre del tipo.
+
+</RealExample>
+
+<TipBox type="consejo">
+
+Sobrescribir `ToString` en cualquier clase que muestres en consola o en logs.
+
+</TipBox>
+
+---
+
+## 💬 Interpolación de cadenas
+
+La interpolación con `$` permite mezclar variables y texto de forma cómoda, y es la forma habitual de construir el resultado de `ToString`:
+
+```csharp
+var nombre = "Jose";
+var mensaje = $"Hola, {nombre}!"; // "Hola, Jose!"
+Console.WriteLine(mensaje);
+```
+
+Dentro de las llaves puedes poner expresiones completas:
+
+```csharp
+$"Tienes {lista.Count} elementos y el total es {precio * 1.21m}"
+```
+
+<TipBox type="truco">
+
+En la interpolación puedes poner formato: `$"Nota: {nota:F1}"` muestra `Nota: 7,5`. Muy útil en `ToString` para fechas (`{fecha:dd/MM/yyyy}`) y monedas.
+
+</TipBox>
+
+---
+
+## ⚖️ Igualdad e identidad
+
+Al comparar objetos hay que distinguir **el mismo objeto** (identidad) del **mismo estado** (igualdad): es la diferencia entre "¿es la misma foto?" y "¿son dos fotos iguales?".
+
+```mermaid
+graph LR
+    C["Comparar objetos"] --> I{"¿Misma referencia?"}
+    I -->|Sí| R1["Son el mismo objeto<br/>(identidad)"]
+    I -->|No| E{"¿Equals dice que sí?"}
+    E -->|Sí| R2["Mismo estado, objetos distintos<br/>(igualdad)"]
+    E -->|No| R3["Distinto estado"]
+    style C fill:#9C27B0,color:#fff
+    style R1 fill:#4CAF50,color:#fff
+    style R2 fill:#2196F3,color:#fff
+    style R3 fill:#f44336,color:#fff
+    style I fill:#607D8B,color:#fff
+    style E fill:#607D8B,color:#fff
+```
+
+---
+
+## ↔️ ReferenceEquals y el comportamiento por defecto
+
+Una comparación por **identidad** verifica si dos referencias apuntan al mismo objeto en memoria:
+
+```csharp
+var a = new Libro { Titulo = "1984" };
+var b = new Libro { Titulo = "1984" };
+
+Console.WriteLine(object.ReferenceEquals(a, b)); // False: son objetos distintos
+
+var c = a;
+Console.WriteLine(object.ReferenceEquals(a, c)); // True: misma referencia
+```
+
+---
+
+## 📊 Igualdad por valor frente a por referencia
+
+Por defecto, en C# la comparación `==` entre objetos de tipo clase compara **la referencia** (identidad), no el contenido. Para comparar el **estado** debes:
+
+- Sobrescribir el método `Equals(object?)`
+- Sobrescribir también `GetHashCode()` (deben ir siempre juntos)
+
+| Comparación | Qué comprueba |
+|-------------|---------------|
+| `==` | La referencia: ¿es el mismo objeto? |
+| `Equals` | El estado: ¿tiene los mismos datos? |
+
+<TipBox type="advertencia">
+
+Sobrescribir `Equals` **no** cambia el comportamiento de `==`: el operador sigue comparando referencias. Si quieres que `==` compare por estado, además debes sobrecargar el operador `==` con `operator ==`.
+
+</TipBox>
+
+---
+
+## 🧬 Sobrescribir `Equals` y `GetHashCode`
+
+Esta es la clase `Libro` con igualdad por estado definida a mano:
+
+```csharp
+public class Libro
+{
+    public string Titulo { get; set; } = string.Empty;
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is Libro otro)
+            return Titulo == otro.Titulo;
+        return false;
+    }
+
+    public override int GetHashCode() => Titulo.GetHashCode();
+}
+```
+
+---
+
+## 🔀 Al comparar: mismo estado, distinta referencia
+
+Y así se comporta al compararla:
+
+```csharp
+var libro1 = new Libro { Titulo = "1984" };
+var libro2 = new Libro { Titulo = "1984" };
+
+Console.WriteLine(libro1.Equals(libro2));              // True: mismo estado
+Console.WriteLine(object.ReferenceEquals(libro1, libro2)); // False: distinta referencia
+Console.WriteLine(libro1 == libro2);                   // False: == compara referencias
+```
+
+<RealExample app="Biblioteca">
+
+Tu app de biblioteca guarda en un diccionario los libros por título: para que `diccionario[libro]` encuentre el libro, la clave necesita un `GetHashCode` y un `Equals` correctos. Sin ellos, cada consulta "pierde" el libro aunque tenga los mismos datos.
+
+</RealExample>
+
+---
+
+## 🗄️ Varios campos: se comparan todos
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+```csharp
+public class Gato
+{
+    public string Nombre { get; set; } = string.Empty;
+    public int Edad { get; set; }
+    public string Raza { get; set; } = string.Empty;
+    public bool EsDomestico { get; set; }
+
+    public override string ToString() =>
+        $"[Gato: {Nombre}, Edad: {Edad}, Raza: {Raza}, Doméstico: {EsDomestico}]";
+
+    public override int GetHashCode() =>
+        HashCode.Combine(Nombre, Edad, Raza, EsDomestico);
+
+    public override bool Equals(object? obj) =>
+        obj is Gato otro &&
+        otro.Nombre == Nombre &&
+        otro.Edad == Edad &&
+        otro.Raza == Raza &&
+        otro.EsDomestico == EsDomestico;
+}
+```
+
+</div>
+<div>
+
+Si la clase tiene varios campos, se comparan todos en `Equals` y se combinan en `GetHashCode`:
+
+<TipBox type="consejo">
+
+**Consejo para el examen:** memoriza la pareja: **`Equals` y `GetHashCode` siempre se sobrescriben juntos**. Y recuerda: `==` compara referencias, `Equals` compara estado (si lo has sobrescrito).
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## Resumen del punto 5
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+| Concepto | Descripción |
+|----------|-------------|
+| **`new`** | Crea el objeto en el heap y da su referencia |
+| **Object initializer** | `new Tipo { Prop = valor }` al crear |
+| **`init`** | Solo puede fijarse al crear el objeto |
+| **Target-typed new** | `Gato g = new(...)`: el tipo lo da la variable |
+| **`this`** | Referencia a la instancia actual |
+| **`ToString()`** | El objeto convertido a texto con `override` |
+| **Identidad** | ¿El mismo objeto? `ReferenceEquals` y `==` |
+| **Igualdad** | ¿El mismo estado? `Equals` + `GetHashCode` |
+
+</div>
+<div>
+
+<ConceptCard icon="✅" title="Buenas prácticas" accent="green">
+
+- Constructor para lo imprescindible; initializers, para lo opcional
+- Propiedades `init`: solo se fijan al crear el objeto
+- `Equals` y `GetHashCode`: siempre juntos, nunca uno solo
+- Recuerda: `==` compara referencias, `Equals` compara el estado
+
+</ConceptCard>
+
+<div class="mt-3">
+
+**⏭️ ¿Qué viene después?** En el **punto 6**: constructores, parámetros por defecto y validación.
+
+</div>
+
+</div>
+</div>
+
+---
 layout: center
 ---
 
