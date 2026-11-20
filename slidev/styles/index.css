@@ -569,6 +569,13 @@ html.dark .ud-highlight {
   margin-top: 0;
 }
 
+/* Un mermaid dentro de un grid es hijo directo: la separación la da el gap,
+   no el margen (si no, la columna del diagrama arrancaba más abajo que la
+   de al lado y las columnas desalineadas — regla de §4.2). */
+.slidev-layout .grid > .mermaid {
+  margin-top: 0;
+}
+
 /* Diagrama casi cuadrado (árbol de 6 hojas: pilares de la POO): a 424px de
    columna medía 386px de alto y se cortaba al ENTRAR en la slide (el JS de
    ajuste llegaba tarde y solo se arreglaba al refrescar). A 384px cabe SOLO:
