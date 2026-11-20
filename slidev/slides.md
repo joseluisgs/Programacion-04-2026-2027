@@ -4179,6 +4179,443 @@ De un vistazo, cuándo pertenece a la clase o a la instancia, cuándo se inicial
 </div>
 
 ---
+layout: section
+---
+
+<div class="ud-section-number">08</div>
+
+# Enums, structs y records
+
+<div class="opacity-70">Tres formas de definir tipos propios que no son clases corrientes</div>
+
+---
+
+## 8 · Punto de partida
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+<TipBox type="consejo" title="Punto de partida">
+
+En un videojuego eliges personaje entre "guerrero, mago, pícaro": ni una más ni una menos. Para eso existen los **enums**. Y cuando guardas unas coordenadas en un mapa, ¿merece la pena todo el peso de un objeto? Ahí entran los **structs** y los **records**: tres formas de definir tipos propios que no son clases "corrientes".
+
+</TipBox>
+
+</div>
+<div>
+
+<Objetivos
+  :items="[
+    'Definir enums, asignarles valores y convertirlos a cadenas y viceversa',
+    'Usar enums con [Flags] para combinar opciones con operadores bit a bit',
+    'Explicar la diferencia entre tipos por valor y tipos por referencia al copiarlos y pasarlos',
+    'Emplear records con la expresión with para crear copias modificadas',
+    'Elegir entre class, struct y record según el problema que se resuelva',
+  ]"
+/>
+
+</div>
+</div>
+
+---
+
+## 🎛️ Enums: un conjunto fijo de opciones
+
+Los **enums** te permiten definir un conjunto de valores posibles para un tipo. Se usan para representar opciones limitadas y conocidas: en el fondo, son números enteros con nombres legibles para los humanos. Definir uno es declarar sus miembros y usarlos como si fueran constantes con nombre:
+
+```csharp
+public enum Color { Rojo, Verde, Azul }
+
+Color miColor = Color.Azul;
+```
+
+En cuanto lo tienes, el compilador solo acepta esos valores: `miColor = "Azul"` no compila, porque `Color` no es un texto.
+
+<RealExample app="Apps de pedidos">
+
+Cuando en una app eliges el estado de un pedido ("pendiente", "enviado", "entregado"), hay un enum detrás. Nadie puede escribir "casi entregado": o estás en uno de los valores definidos o no estás en ninguno.
+
+</RealExample>
+
+---
+
+## 🔢 Valores numéricos en los enums
+
+Si no se asignan valores a los miembros, empiezan en `0` y aumentan en `1`. También puedes asignar valores numéricos concretos a cada miembro:
+
+```csharp
+public enum DiaSemana
+{
+    Lunes = 1,
+    Martes = 2,
+    Miercoles = 3,
+    Jueves = 4,
+    Viernes = 5,
+    Sabado = 6,
+    Domingo = 7
+}
+```
+
+---
+
+## 🔄 De enum a número y viceversa
+
+Un enum es en el fondo un número con nombre: puedes leerlo como `int` y también convertir un número en un miembro del enum mediante casting:
+
+```csharp
+DiaSemana hoy = DiaSemana.Miercoles;
+int valor = (int)hoy; // valor será 3
+
+// También se puede convertir un número a enum mediante casting
+DiaSemana dia = (DiaSemana)5; // dia será DiaSemana.Viernes
+```
+
+<TipBox type="consejo">
+
+Si el enum se va a guardar en una base de datos o en un fichero, fija siempre los valores a mano (`= 1`, `= 2`...). Si mañana añades un miembro al principio, los números de los demás no se mueven y tu información guardada sigue siendo válida.
+
+</TipBox>
+
+---
+
+## 🔁 De enum a cadena y viceversa
+
+Puedes convertir enums a cadenas y viceversa de forma sencilla:
+
+```csharp
+Color color = Color.Rojo;
+string nombreColor = color.ToString(); // "Rojo"
+
+// Convertir string a enum (parsing)
+Color color2 = (Color)Enum.Parse(typeof(Color), "Verde");
+```
+
+<RealExample app="Formularios">
+
+Cuando el usuario escribe "Verde" en un formulario y tu app lo guarda como `Color.Verde` en la base de datos, hay un `Enum.Parse` haciendo de traductor entre el texto humano y el valor del enum.
+
+</RealExample>
+
+<TipBox type="advertencia">
+
+`Enum.Parse` lanza una excepción si el texto no es válido. En código de producción se prefiere `Enum.TryParse<Color>("Verde", out var c)`, que devuelve `false` en vez de romper el programa.
+
+</TipBox>
+
+---
+
+## 🚩 Combinar opciones con `[Flags]`
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+Con el atributo `[Flags]` puedes **combinar valores** para indicar varias opciones a la vez: muy útil para permisos o configuraciones. Así se combina el permiso de lectura y el de escritura:
+
+<TipBox type="truco">
+
+Los valores deben ser potencias de dos (`1, 2, 4, 8...`) para que cada uno ocupe un "bit" distinto y las combinaciones no se solapen.
+
+</TipBox>
+
+</div>
+<div>
+
+```mermaid
+graph LR
+    L["Leer 1"] --> P["Permiso final<br/>3 = Leer | Escribir"]
+    E["Escribir 2"] --> P
+    X["Ejecutar 4"]
+    style L fill:#2196F3,color:#fff
+    style E fill:#2196F3,color:#fff
+    style P fill:#4CAF50,color:#fff
+    style X fill:#607D8B,color:#fff
+```
+
+</div>
+</div>
+
+---
+
+## 🔐 El enum `Permiso` y sus combinaciones
+
+Y este es el enum con sus combinaciones:
+
+```csharp
+[Flags]
+public enum Permiso
+{
+    Ninguno = 0,
+    Leer = 1,
+    Escribir = 2,
+    Ejecutar = 4
+}
+
+// Combinar permisos con el operador OR (|)
+Permiso p = Permiso.Leer | Permiso.Escribir;
+```
+
+---
+
+## 🎯 Comprobar permisos con `HasFlag`
+
+Con el permiso que acabamos de combinar (`Leer | Escribir`), comprobamos si incluye uno concreto con `.HasFlag`:
+
+```csharp
+// Verificar permisos con .HasFlag (o con AND bitwise: p & Permiso.Escribir)
+bool puedeEscribir = p.HasFlag(Permiso.Escribir); // true
+bool puedeEjecutar = p.HasFlag(Permiso.Ejecutar); // false
+```
+
+<RealExample app="Permisos de ficheros">
+
+Los permisos de un sistema de ficheros (leer, escribir, ejecutar) o los roles de una app se modelan con `[Flags]`: un usuario puede tener varios a la vez, y `HasFlag` comprueba si tiene uno concreto.
+
+</RealExample>
+
+---
+
+## 📦 Structs: tipos por valor
+
+Los **structs** son tipos por **valor**. A diferencia de las clases, cuando copias un struct creas una copia **independiente** de todos sus datos:
+
+- Se usan para datos pequeños e inmutables (puntos, colores, coordenadas).
+- Representan valores que tienen un significado propio sin identidad única.
+- No pueden heredar de otros structs ni de clases (ni tener herencia ellos mismos).
+- Se almacenan normalmente en la pila (**stack**), lo que los hace muy rápidos.
+
+```csharp
+public struct Punto
+{
+    public int X { get; }
+    public int Y { get; }
+
+    public Punto(int x, int y) => (X, Y) = (x, y);
+}
+```
+
+---
+
+## ↔️ Copiar o compartir: valor frente a referencia
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+Es crucial entender cómo se comportan al pasarlos a métodos:
+
+- **Struct:** se pasa una **copia** (por valor). Si lo modificas dentro del método, el original no cambia.
+- **Clase:** se pasa una **referencia**. Si lo modificas dentro del método, el objeto original cambia.
+
+Fíjate en que las dos referencias de abajo apuntan al **mismo** objeto, mientras que arriba cada variable tiene sus propios datos: datos independientes arriba, sitio común abajo.
+
+</div>
+<div class="ud-mer-angosto">
+
+```mermaid
+graph LR
+    subgraph S1["Stack: struct"]
+        V1["Variable A"] --> V2["Copia independiente"]
+    end
+    style V1 fill:#2196F3,color:#fff
+    style V2 fill:#FF9800,color:#fff
+```
+
+```mermaid
+graph LR
+    subgraph S2["Heap: clase"]
+        R1["Referencia 1"] --> C1["Objeto B"]
+        R2["Referencia 2"] --> C1
+    end
+    style C1 fill:#4CAF50,color:#fff
+    style R1 fill:#9C27B0,color:#fff
+    style R2 fill:#9C27B0,color:#fff
+```
+
+</div>
+</div>
+
+---
+
+## 📬 Copias en la vida real
+
+Este matiz se ve en el día a día y también en el rendimiento:
+
+<RealExample app="Correo y documentos">
+
+Tu dirección postal es un valor: si se la pasas a un amigo por copia y luego la cambias, la de él no se entera. En cambio, un documento compartido es una referencia: si tú lo editas, él ve los cambios.
+
+</RealExample>
+
+<TipBox type="advertencia">
+
+Aunque un struct se almacene en el stack por defecto, si es grande (más de unos bytes) o está dentro de un array, el compilador puede moverlo al heap. No escribas código que dependa de esa decisión.
+
+</TipBox>
+
+---
+
+## 🧬 Records: igualdad por valor
+
+Los **records** son tipos por referencia que introducen la **igualdad por valor**: dos records son iguales si sus datos coinciden, aunque sean objetos distintos. Son ideales para modelos de datos inmutables (DTO):
+
+- Generan automáticamente `Equals`, `GetHashCode` y `ToString`.
+- Soportan la expresión `with` para crear copias modificadas.
+
+```csharp
+public record Persona(string Nombre, int Edad);
+
+var p1 = new Persona("Juan", 30);
+var p2 = p1 with { Edad = 31 }; // copia con la edad cambiada
+
+Console.WriteLine(p1 == p2); // False: los datos difieren
+Console.WriteLine(p1);       // Persona { Nombre = Juan, Edad = 30 }
+```
+
+<RealExample app="APIs web">
+
+En una API web, los datos que viajan en JSON (un producto, un usuario) suelen ser `record`: si llegan dos respuestas con los mismos campos, son "el mismo dato" para la aplicación, sin importar cuántos objetos se hayan creado.
+
+</RealExample>
+
+---
+
+## 🧭 Record struct: valor con igualdad automática
+
+Son como los records, pero son tipos por **valor**. Se recomiendan para datos pequeños que necesiten la comodidad de los records (igualdad automática y representación en texto) pero la gestión de memoria de los structs:
+
+```csharp
+public record struct Coordenada(double Lat, double Lon);
+
+var c1 = new Coordenada(40.4, -3.7);
+var c2 = c1 with { Lon = -0.4 };
+
+Console.WriteLine(c1 == c2); // False: valores distintos
+```
+
+---
+
+## ⚖️ Class frente a struct frente a record
+
+Para decidir con rapidez, esta tabla resume las diferencias. **¿Cuándo usar cada uno?**
+
+| Característica | Class | Struct | Record |
+| :--- | :--- | :--- | :--- |
+| **Semántica** | Entidad con identidad única | Valor simple / dato | Dato / modelo inmutable |
+| **Memoria** | Referencia (heap) | Valor (stack) | Referencia (record class) o valor (record struct) |
+| **Copia** | Copia de referencia | Copia de todos los datos | Copia profunda (`with`) |
+| **Igualdad** | Por identidad (referencia) | Por valor (campos) | Por valor (automática) |
+
+- **`class`:** objetos con "vida" y comportamiento complejo (factura, usuario, pedido).
+- **`struct`:** valores matemáticos o datos muy pequeños que se crean y destruyen rápido (coordenadas, dinero).
+- **`record`:** contenedores de datos que solo sirven para transportar información (DTO, respuestas de API).
+
+---
+
+## 🌳 ¿Class, struct o record?
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+La decisión, en un árbol: la pregunta clave primero y luego la elección entre `struct` y `record`:
+
+<TipBox type="consejo" title="Truco del examen">
+
+La pregunta clave es *"¿tiene identidad propia?"*. Si dos entidades con los mismos datos pueden ser la misma o no (dos usuarios distintos con el mismo nombre), es `class`. Si solo importan los valores (2 + 2 = 4 sea quien sea), es `struct` o `record`.
+
+</TipBox>
+
+</div>
+<div>
+
+```mermaid
+graph LR
+    Q{"¿Tiene identidad propia?"}
+    Q -->|"Sí"| CL["class<br/>usuario, factura, pedido"]
+    Q -->|"No"| V{"¿Necesitas igualdad<br/>automática?"}
+    V -->|"Sí"| RC["record<br/>DTO, respuestas de API"]
+    V -->|"No"| ST["struct<br/>coordenadas, dinero"]
+    style Q fill:#607D8B,color:#fff
+    style V fill:#607D8B,color:#fff
+    style CL fill:#2196F3,color:#fff
+    style RC fill:#9C27B0,color:#fff
+    style ST fill:#FF9800,color:#fff
+```
+
+</div>
+</div>
+
+---
+
+## 🕵️ Tipos anónimos
+
+Permiten agrupar datos de forma rápida sin definir una clase o struct formal. **Primero, los tipos anónimos:**
+
+```csharp
+var anon = new { Nombre = "Juan", Edad = 30 };
+Console.WriteLine(anon.Nombre); // Juan
+```
+
+<TipBox type="advertencia">
+
+Los tipos anónimos no se pueden devolver de un método con tipo explícito (el compilador no sabe escribir su tipo). Para eso existen los `record` o las clases: si el dato viaja por la aplicación, dale nombre propio.
+
+</TipBox>
+
+---
+
+## 🧩 Tuplas (ValueTuples)
+
+Y después las tuplas (ValueTuples), que además admiten nombres en sus elementos:
+
+```csharp
+var tupla = (Nombre: "Ana", Edad: 25);
+Console.WriteLine(tupla.Nombre); // Ana
+```
+
+<RealExample app="Notas y estadísticas">
+
+Cuando devuelves de un método la nota media y el número de intentos a la vez, sin querer crear una clase entera para eso, usas una tupla: rápida, anónima y suficiente para el caso.
+
+</RealExample>
+
+---
+
+## Resumen del punto 8
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+| Concepto | Descripción |
+|----------|-------------|
+| **Enum** | Conjunto fijo de valores con nombre; números enteros legibles |
+| **`[Flags]`** | Enum combinable con `\|` y `HasFlag` (potencias de dos) |
+| **`Enum.Parse` / `TryParse`** | Texto → enum; `TryParse` no lanza excepciones |
+| **Struct** | Tipo por valor: al copiarlo, los datos se duplican |
+| **Record class** | Tipo por referencia con igualdad por valor; `with` hace copias modificadas |
+| **Record struct** | Tipo por valor con igualdad automática |
+| **Tipo anónimo y tupla** | Datos sin clase: `new { ... }` (no se devuelve de un método) y `(Nombre: "Ana")` |
+
+</div>
+<div>
+
+<ConceptCard icon="✅" title="Buenas prácticas" accent="green">
+
+- Enums para todo lo que sea un conjunto fijo de opciones
+- Fija los valores a mano si van a persistirse
+- `TryParse` con datos del usuario; nunca `Parse`
+- `record` para DTOs, `class` para entidades
+
+</ConceptCard>
+
+<div class="mt-3">
+
+**⏭️ ¿Qué viene después?** En el **punto 9**: clases anidadas y composición («tiene un» frente a «es un»).
+
+</div>
+
+</div>
+</div>
+
+---
 layout: center
 ---
 
