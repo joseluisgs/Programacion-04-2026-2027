@@ -4616,6 +4616,324 @@ Cuando devuelves de un método la nota media y el número de intentos a la vez, 
 </div>
 
 ---
+layout: section
+---
+
+<div class="ud-section-number">09</div>
+
+# Clases anidadas y composición
+
+<div class="opacity-70">Clases dentro de clases y objetos construidos juntando piezas</div>
+
+---
+
+## 9 · Punto de partida
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+<TipBox type="consejo" title="Punto de partida">
+
+Si abres un coche, verás que dentro tiene un motor, y dentro del motor hay piezas que solo tienen sentido estando ahí: nadie usa un pistón suelto en la cocina. En POO pasa igual: a veces una clase solo tiene sentido dentro de otra, y a veces lo mejor es construir un objeto **juntando otros objetos**.
+
+</TipBox>
+
+</div>
+<div>
+
+<Objetivos
+  :items="[
+    'Definir clases anidadas y saber cuándo conviene hacerlo',
+    'Construir objetos por composición: contener otros objetos como estado',
+    'Aplicar la inyección de objetos a través del constructor',
+    'Distinguir las relaciones «es un» (herencia) de las «tiene un» (composición)',
+    'Justificar por qué la composición suele ser preferible a la herencia',
+  ]"
+/>
+
+</div>
+</div>
+
+---
+
+## 🪆 Clases anidadas
+
+Las **clases anidadas** son clases definidas dentro de otras clases. Son útiles para agrupar tipos relacionados que solo tienen sentido dentro del contexto de la clase contenedora. Este ejemplo define `Documento` dentro de `Persona`:
+
+```csharp
+public class Persona
+{
+    public string Nombre { get; set; } = string.Empty;
+
+    // Clase anidada: solo tiene sentido dentro de Persona
+    public class Documento
+    {
+        public string Tipo { get; set; } = string.Empty;   // DNI, pasaporte, etc.
+        public string Numero { get; set; } = string.Empty;
+    }
+}
+```
+
+---
+
+## 📦 Una caja dentro de otra caja
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+El tipo interior se referencia desde fuera con el nombre del contenedor delante:
+
+```csharp
+var p = new Persona { Nombre = "José" };
+var doc = new Persona.Documento
+{
+    Tipo = "DNI", Numero = "12345678Z"
+};
+```
+
+<RealExample app="Biblioteca">
+
+En una app de biblioteca, la clase `Prestamo` puede anidar su clase `Devolucion`: un tipo de devolución suelto no tiene sentido sin un préstamo que lo origine.
+
+</RealExample>
+
+</div>
+<div>
+
+En un esquema, la clase `Documento` es una caja dentro de la caja `Persona`:
+
+```mermaid
+graph LR
+    subgraph PER["class Persona"]
+        N["Nombre"]
+        subgraph DOC["class Documento (anidada)"]
+            T["Tipo, Numero"]
+        end
+    end
+    U["Uso: new Persona.Documento()"] -.-> DOC
+    style N fill:#2196F3,color:#fff
+    style T fill:#4CAF50,color:#fff
+    style U fill:#607D8B,color:#fff
+```
+
+</div>
+</div>
+
+---
+
+## 💡 Estáticas o de instancia
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+No todas las anidadas funcionan igual: la gran pregunta es si necesitan referencia a la clase externa.
+
+<TipBox type="consejo">
+
+Las clases anidadas **estáticas** no necesitan referencia a la externa (son como módulos internos); las de **instancia** pueden usar `new Persona.Documento()` y hasta acceder a miembros de la instancia de `Persona`. Elige la estática por defecto: es más simple y no arrastra estado.
+
+</TipBox>
+
+</div>
+<div>
+
+Úsalas para agrupar tipos que solo tienen sentido dentro de otro, o para evitar crear ficheros extra para clases de utilidad muy pequeñas. Es especialmente útil en patrones como el **Builder**, donde la clase Builder suele estar anidada dentro de la clase que se construye.
+
+<RealExample app="StringBuilder">
+
+El patrón `StringBuilder` de .NET, o los *builders* de configuración (`new LoggerConfiguration()...`), montan su resultado paso a paso con clases internas que solo importan durante la construcción.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## 🚗 Composición: el objeto que "tiene un"
+
+La **composición** es un patrón fundamental en POO: consiste en construir objetos que contienen otros objetos como parte de su estado. Representa una relación de **"tiene un"** o **"es parte de"**.
+
+<TipBox type="analogia">
+
+Un coche **tiene un** motor (composición), pero un coche deportivo **es un** coche (herencia). Si borras el motor, el coche deja de ser coche; si cambias el motor, el coche sigue siendo coche: la composición es intercambiable, la herencia no.
+
+</TipBox>
+
+---
+
+## 🧱 La pieza: la clase `Motor`
+
+Este ejemplo compone un `Coche` con un `Motor`: cuando una clase contiene a otra, la principal depende de la contenida. Empieza por la pieza:
+
+```csharp
+public class Motor
+{
+    public string Tipo { get; }
+
+    public Motor(string tipo) => Tipo = tipo;
+
+    public void Encender() => Console.WriteLine("Motor encendido");
+}
+```
+
+La clase `Motor` se puede reutilizar en otros contextos (un camión, una lancha) y facilita el mantenimiento.
+
+---
+
+## 🧩 La clase `Coche` contiene un `Motor`
+
+El `Coche` guarda el motor como propiedad y lo recibe en el constructor (el comentario lo llama *inyectar*):
+
+```csharp
+public class Coche
+{
+    public Motor Motor { get; }
+
+    // Inyectamos el motor en el constructor
+    public Coche(Motor motor)
+    {
+        Motor = motor;
+    }
+
+    public void Arrancar() => Motor.Encender();
+}
+```
+
+---
+
+## 📊 La relación en un diagrama de clases
+
+Aquí la clase `Coche` se compone de un `Motor`. La relación se ve así en un diagrama de clases:
+
+```mermaid
+classDiagram
+    direction LR
+    class Coche {
+        +Motor Motor
+        +Coche(Motor motor)
+        +Arrancar() void
+    }
+    class Motor {
+        +string Tipo
+        +Motor(string tipo)
+        +Encender() void
+    }
+    Coche *-- Motor : tiene un
+```
+
+---
+
+## 🎯 Inyectar las piezas por el constructor
+
+En este diseño el `Coche` tiene una dependencia hacia el `Motor`, por lo que debemos **"inyectar"** el objeto `Motor` en el constructor de `Coche`. Y así se usa:
+
+```csharp
+var motorV8 = new Motor("V8");
+var miCoche = new Coche(motorV8);
+miCoche.Arrancar(); // Imprime: Motor encendido
+```
+
+<TipBox type="nota">
+
+Este patrón de pasar las piezas por el constructor es el mismo que usas con la inyección de dependencias en los servicios: la clase no fabrica sus piezas, recibe las que necesita y solo se preocupa de usarlas.
+
+</TipBox>
+
+---
+
+## ⚖️ Composición frente a la herencia
+
+La composición suele ser preferible a la herencia (*favor composition over inheritance*). Ventajas:
+
+| Ventaja | Por qué ocurre |
+| :--- | :--- |
+| **Más flexible** | Puedes cambiar el motor de un coche en tiempo de ejecución, pero no puedes cambiar la clase de la que hereda un objeto |
+| **Menos acoplamiento** | Las clases son más independientes: el coche no necesita saber cómo funciona el motor por dentro, solo cómo encenderlo |
+| **Más fácil de extender** | Añades un motor nuevo sin tocar la clase `Coche` |
+| **Más fácil de testear** | Puedes probar la clase `Motor` por separado antes de usarla en `Coche` |
+
+<RealExample app="Netflix">
+
+Netflix **compone** su reproductor con motores de decodificación intercambiables para la tele, el móvil o la consola. Con herencia, cada dispositivo nuevo obligaría a crear una subclase.
+
+</RealExample>
+
+---
+
+## 🔄 "Es un" frente a "tiene un"
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+Las dos relaciones, lado a lado: la flecha de herencia (`<|`) es "es un" y la composición (`*--`) es "tiene un".
+
+<TipBox type="advertencia">
+
+La herencia no es mala: es la base del polimorfismo (`virtual`/`override`, punto 1). La regla es usar herencia solo para relaciones reales de "es un" y composición para las de "tiene un".
+
+</TipBox>
+
+</div>
+<div>
+
+```mermaid
+classDiagram
+    direction LR
+    class Coche {
+        +Arrancar()
+    }
+    class CocheDeportivo {
+        +ActivarTurbo()
+    }
+    class Motor {
+        +Encender()
+    }
+    Coche <|-- CocheDeportivo : es un
+    Coche *-- Motor : tiene un
+```
+
+</div>
+</div>
+
+---
+
+## Resumen del punto 9
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+| Concepto | Descripción |
+|----------|-------------|
+| **Clase anidada** | Clase definida dentro de otra; se accede como `Externa.Interna` |
+| **Clase anidada estática** | No necesita referencia a la externa; la opción por defecto |
+| **Composición** | Relación "tiene un": el objeto contiene a otros como estado |
+| **Inyección** | Pasar las piezas por el constructor en lugar de fabricarlas dentro |
+| **"Es un" vs. "tiene un"** | Herencia para lo primero, composición para lo segundo |
+| **Favor composition over inheritance** | Principio: preferir composición por flexibilidad y bajo acoplamiento |
+
+</div>
+<div>
+
+<ConceptCard icon="✅" title="Buenas prácticas" accent="green">
+
+- Anidar solo si el tipo interior no tiene sentido fuera
+- Composición para «tiene un»; herencia para «es un»
+- Inyectar las piezas por el constructor
+- Herencia solo con polimorfismo
+
+</ConceptCard>
+
+<div class="mt-3">
+
+**⏭️ ¿Qué viene después?** En el **punto 10**: del diagrama E/R a clases (1-1, 1-N y N-M).
+
+</div>
+
+</div>
+</div>
+
+---
 layout: center
 ---
 
