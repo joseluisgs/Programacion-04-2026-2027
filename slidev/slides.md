@@ -5554,6 +5554,648 @@ Estos son los fallos que aparecen una y otra vez al pasar del diagrama E/R al c�
 </div>
 
 ---
+layout: section
+---
+
+<div class="ud-section-number">11</div>
+
+# Patrones básicos de diseño
+
+<div class="opacity-70">Soluciones probadas a problemas que se repiten</div>
+
+---
+
+## 11 · Punto de partida
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+<TipBox type="consejo" title="Punto de partida">
+
+Si en una receta de cocina repites siempre los mismos pasos para hacer un bizcocho, terminas memorizando la receta: eso es un patrón. En software pasa igual: los **patrones de diseño** son soluciones probadas a problemas comunes, escritas una vez y reutilizadas mil.
+
+</TipBox>
+
+</div>
+<div>
+
+<Objetivos
+  :items="[
+    'Explicar qué es un patrón de diseño y por qué conviene reutilizar soluciones probadas',
+    'Implementar Singleton y carga perezosa (Lazy<T>) correctamente en C#',
+    'Crear objetos con métodos fábrica y constructores privados',
+    'Encadenar configuraciones con la API fluida y el patrón Builder',
+    'Agrupar subsistemas complejos tras una Fachada',
+    'Aplicar la composición con inyección de dependencias por constructor',
+  ]"
+/>
+
+</div>
+</div>
+
+---
+
+## 🔒 Singleton: una sola instancia
+
+El **Singleton** asegura que solo haya **una instancia** de una clase en todo el programa, y que todos accedan a ella por un único punto. Es como el único servidor de correos de una oficina: todos los departamentos usan el mismo.
+
+```mermaid
+graph LR
+    C1[Cliente A] --> S[("Instancia única")]
+    C2[Cliente B] --> S
+    style C1 fill:#2196F3,color:#fff
+    style C2 fill:#2196F3,color:#fff
+    style S fill:#9C27B0,color:#fff
+```
+
+<RealExample app="Tu app">
+
+Tu app tiene un único gestor de conexión a la base de datos o un único reloj de sistema: si cada módulo creara el suyo, tendrías diez conexiones abiertas sin querer. El Singleton evita exactamente eso.
+
+</RealExample>
+
+---
+
+## 🔑 El ejemplo clásico
+
+Este es el ejemplo clásico del patrón: constructor privado —nadie puede hacer `new` desde fuera— y creación perezosa, con un método estático que solo instancia si hace falta:
+
+<div class="grid grid-cols-[4fr_6fr] gap-5 items-start">
+<div>
+
+<TipBox type="advertencia">
+
+Úsalo con moderación: un Singleton global complica los tests (su estado vive entre pruebas). En proyectos con inyección de dependencias se registra como «una sola instancia» en el contenedor, sin código Singleton a mano.
+
+</TipBox>
+
+</div>
+<div>
+
+```csharp
+public sealed class Config
+{
+    private static Config? _instancia;
+
+    private Config() { } // nadie puede hacer new desde fuera
+
+    public static Config ObtenerInstancia()
+    {
+        _instancia ??= new Config(); // se crea solo si hace falta
+        return _instancia;
+    }
+}
+```
+
+</div>
+</div>
+
+---
+
+## 💡 Otra forma: inicialización directa
+
+Otra forma más sencilla y segura en C# es usar un campo estático con inicialización directa: la instancia se crea al cargar la clase y `ObtenerInstancia()` solo la devuelve:
+
+```csharp
+public sealed class Config
+{
+    private static readonly Config _instancia = new Config();
+
+    private Config() { }
+
+    public static Config ObtenerInstancia() => _instancia;
+}
+```
+
+---
+
+## 💤 Lazy: no crear hasta que haga falta
+
+El patrón **lazy** retrasa la creación de un objeto hasta que se necesite de verdad. Optimiza recursos: si el objeto nunca se usa, nunca se crea, ahorrando tiempo y memoria. Es especialmente útil cuando la creación es costosa.
+
+```mermaid
+graph LR
+    A[Acceso a la propiedad] --> B{¿Está creado?}
+    B -->|No| C[Instanciar objeto]
+    C --> D[Devolver instancia]
+    B -->|Sí| D
+    style A fill:#2196F3,color:#fff
+    style B fill:#607D8B,color:#fff
+    style C fill:#FF9800,color:#fff
+    style D fill:#4CAF50,color:#fff
+```
+
+- **Pros:** ahorra recursos y mejora el rendimiento inicial.
+- **Contras:** añade complejidad y puede ser más lento la primera vez que se accede.
+
+---
+
+## ⚡ `Lazy<T>`: la forma cómoda en C#
+
+La implementación más cómoda en C# es `Lazy<T>`: guardas la creación y solo se instancia la primera vez que accedes a `.Value`:
+
+```csharp
+public class RecursoCostoso
+{
+    private static readonly Lazy<RecursoCostoso> _instancia =
+        new(() => new RecursoCostoso());
+
+    private RecursoCostoso() { }
+
+    public static RecursoCostoso Instancia => _instancia.Value;
+}
+```
+
+<RealExample app="Edición de imágenes y Netflix">
+
+Una app de edición de imágenes carga el motor de reconocimiento facial solo cuando abres esa función; si nunca la usas, ese motor jamás ocupa memoria. Netflix precarga los reproductores de las series que vas a ver, pero no de las 5.000 que tienes en la lista.
+
+</RealExample>
+
+---
+
+## 🔨 Métodos fábrica
+
+Los **métodos fábrica** encapsulan la lógica de creación de objetos. Con ellos controlas cómo se crean, aplicas validaciones o devuelves distintos tipos según un valor (por ejemplo, un `enum`).
+
+```mermaid
+graph LR
+    C[Código cliente] --> F["Método fábrica<br/>(Crear)"]
+    F -->|new| O[Objeto nuevo]
+    style C fill:#2196F3,color:#fff
+    style F fill:#FF9800,color:#fff
+    style O fill:#4CAF50,color:#fff
+```
+
+<RealExample app="Pagos">
+
+Cuando tu app decide crear un `PagoTarjeta`, `PagoPayPal` o `PagoBizum` según la opción elegida, hay un método fábrica devolviendo el tipo adecuado: la caja no sabe qué clase concreta usa, solo que puede `Pagar()`.
+
+</RealExample>
+
+---
+
+## 🚪 Constructor privado y una sola puerta
+
+Este ejemplo combina constructor privado con método fábrica: la clase se crea a sí misma desde dentro, y `Crear()` es la única puerta de creación para el exterior:
+
+<div class="grid grid-cols-[4fr_6fr] gap-5 items-start">
+<div>
+
+<TipBox type="consejo">
+
+Si ves `new` por todas partes queriendo centralizar reglas de creación, toca convertirlo en un método fábrica estático.
+
+</TipBox>
+
+</div>
+<div>
+
+```csharp
+public class Usuario
+{
+    public string Nombre { get; }
+
+    private Usuario(string nombre) => Nombre = nombre;
+
+    // Método fábrica: única puerta de creación
+    public static Usuario Crear(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+            throw new ArgumentException("El nombre no puede estar vacío");
+        return new Usuario(nombre);
+    }
+}
+```
+
+</div>
+</div>
+
+---
+
+## 🧱 Inicializadores estáticos
+
+<div class="grid grid-cols-[5fr_6fr] gap-5 items-start">
+<div>
+
+Los **constructores estáticos** inicializan datos compartidos de la clase antes de que se use cualquier miembro, y se ejecutan una sola vez:
+
+<RealExample app="Localización de una app">
+
+Una clase que carga los datos de localización de una app (idioma, moneda, formato de fecha) los prepara en su constructor estático: la primera vez que alguien toca la clase, ya está todo listo.
+
+</RealExample>
+
+<TipBox type="nota">
+
+Ya viste los constructores estáticos en el punto 6; aquí cuentan como patrón porque resuelven un problema concreto: **inicialización perezosa y segura de datos de clase**.
+
+</TipBox>
+
+</div>
+<div>
+
+```csharp
+public class Configuracion
+{
+    public static readonly string RutaConfig;
+
+    static Configuracion()
+    {
+        RutaConfig = "/etc/config"; // se ejecuta una única vez
+    }
+}
+
+var ruta = Configuracion.RutaConfig;
+Console.WriteLine(ruta); // Imprime: /etc/config
+```
+
+</div>
+</div>
+
+---
+
+## 🪞 Records y structs: nacen correctos
+
+Para records y structs conviene **preferir la inmutabilidad, inicializar todo al crear el objeto y evitar valores nulos**. Con eso, el objeto nace correcto y ya no cambia:
+
+```csharp
+public record Persona(string Nombre, int Edad);
+
+var p = new Persona("Juan", 30);
+var p2 = p with { Edad = 31 }; // copia modificada, el original intacto
+```
+
+<RealExample app="Mensajería">
+
+Los mensajes que viajan por una API (`record`) se crean una vez con todos sus campos y se propagan sin miedo a que alguien los modifique por sorpresa en mitad del camino.
+
+</RealExample>
+
+<TipBox type="truco">
+
+Si un record admite `null` en algún campo, decláralo `string?` explícitamente. La gestión estricta de nulos te obliga a decidirlo, en vez de descubrirlo en producción.
+
+</TipBox>
+
+---
+
+## 🧵 API fluida: encadenar y configurar
+
+La **API fluida** permite encadenar métodos para configurar objetos de forma cómoda: cada método de configuración devuelve `this`, de modo que la llamada siguiente puede seguir justo detrás:
+
+```mermaid
+graph LR
+    A[Inicio] --> B[Método 1]
+    B -->|return this| C[Método 2]
+    C -->|return this| D[Método 3]
+    D -->|resultado| E[Objeto configurado]
+    style A fill:#607D8B,color:#fff
+    style B fill:#2196F3,color:#fff
+    style C fill:#2196F3,color:#fff
+    style D fill:#2196F3,color:#fff
+    style E fill:#4CAF50,color:#fff
+```
+
+<RealExample app="Entity Framework y Serilog">
+
+Entity Framework, Serilog y el propio FluentValidation de .NET se configuran así: `new LoggerConfiguration().WriteTo.Console().CreateLogger()`. La lectura encadenada indica el orden de los pasos.
+
+</RealExample>
+
+---
+
+## 🔍 La consulta encadenada
+
+<div class="grid grid-cols-[4fr_6fr] gap-5 items-start">
+<div>
+
+Este ejemplo construye una consulta SQL encadenando `From` y `Where`: cada método devuelve `this` y al final `Build()` materializa el texto:
+
+```csharp
+var consulta = new Consulta()
+    .From("Usuarios")
+    .Where("Edad > 18")
+    .Build();
+
+Console.WriteLine(consulta); // SELECT * FROM Usuarios WHERE Edad > 18
+```
+
+</div>
+<div>
+
+```csharp
+public class Consulta
+{
+    private string _tabla = string.Empty;
+    private string _condicion = string.Empty;
+
+    public Consulta From(string tabla)
+    {
+        _tabla = tabla;
+        return this; // clave del patrón fluido
+    }
+
+    public Consulta Where(string condicion)
+    {
+        _condicion = condicion;
+        return this;
+    }
+
+    public string Build() =>
+        $"SELECT * FROM {_tabla} WHERE {_condicion}";
+}
+```
+
+</div>
+</div>
+
+---
+
+## 🪜 Builder: objeto complejo paso a paso
+
+El **Builder** ayuda a construir objetos complejos paso a paso. Así creas objetos con muchas opciones sin necesidad de constructores con decenas de parámetros ni parámetros opcionales por todas partes:
+
+```mermaid
+graph LR
+    C[Cliente] --> B[PersonaBuilder]
+    B --> N[SetNombre]
+    B --> E[SetEdad]
+    N --> F["Build()"]
+    E --> F
+    F --> P[Persona completa]
+    style C fill:#2196F3,color:#fff
+    style B fill:#FF9800,color:#fff
+    style N fill:#607D8B,color:#fff
+    style E fill:#607D8B,color:#fff
+    style F fill:#9C27B0,color:#fff
+    style P fill:#4CAF50,color:#fff
+```
+
+<RealExample app="Configurador de coche">
+
+Cuando configuras un coche en una web (color, motor, llantas, techo solar), cada paso añade una opción y al final confirmas: eso es un Builder montando un objeto complejo a la vista del usuario.
+
+</RealExample>
+
+---
+
+## 📦 El Builder completo
+
+<div class="grid grid-cols-[4fr_6fr] gap-5 items-start">
+<div>
+
+Este es el patrón completo con su uso: cada `Set…` devuelve `this` y `Build()` devuelve la `Persona` ya montada:
+
+```csharp
+var persona = new PersonaBuilder()
+    .SetNombre("Ana")
+    .SetEdad(22)
+    .Build();
+```
+
+</div>
+<div>
+
+```csharp
+public class PersonaBuilder
+{
+    private string _nombre = string.Empty;
+    private int _edad;
+
+    public PersonaBuilder SetNombre(string nombre)
+    {
+        _nombre = nombre;
+        return this;
+    }
+
+    public PersonaBuilder SetEdad(int edad)
+    {
+        _edad = edad;
+        return this;
+    }
+
+    public Persona Build() => new(_nombre, _edad);
+}
+```
+
+</div>
+</div>
+
+---
+
+## 🏠 Fachada: una interfaz simple por delante
+
+La **Fachada** agrupa múltiples operaciones complejas tras una interfaz simple. Encapsula la complejidad y facilita el uso de los subsistemas: el cliente solo llama a un método y la fachada orquesta lo demás:
+
+<RealExample app="Iniciar sesión con Google">
+
+Cuando entras a una web con «Iniciar sesión con Google», la fachada de autenticación orquesta validación, token, permisos y registro de sesión detrás de un único botón: tú no ves ni la mitad de los subsistemas que se activan.
+
+</RealExample>
+
+---
+
+## 📐 El esquema de la Fachada
+
+Así se ve el patrón: el cliente solo toca la fachada, y esta orquesta por dentro los subsistemas complejos:
+
+```mermaid
+graph LR
+    C[Cliente] --> F[Fachada: Casa]
+    F --> S1[Sistema de luces]
+    S1 ~~~ S2[Sistema de clima]
+    S2 ~~~ S3[Sistema de seguridad]
+    style C fill:#2196F3,color:#fff
+    style F fill:#9C27B0,color:#fff
+    style S1 fill:#607D8B,color:#fff
+    style S2 fill:#607D8B,color:#fff
+    style S3 fill:#607D8B,color:#fff
+```
+
+<TipBox type="nota">
+
+En el ejemplo del doc, la fachada `Casa` coordina la `Puerta` y la `Ventana` con un único `AbrirTodo()`: el cliente no sabe qué piezas se mueven por dentro.
+
+</TipBox>
+
+---
+
+## 🎭 Tras la fachada: el código Casa
+
+Este ejemplo implementa la fachada `Casa` sobre sus subsistemas: un solo método coordina la puerta y la ventana por dentro:
+
+<div class="grid grid-cols-[4fr_6fr] gap-5 items-start">
+<div>
+
+El cliente solo pide `AbrirTodo()` o `CerrarTodo()`; de qué piezas se vale la fachada para lograrlo es un detalle que queda oculto dentro de la clase.
+
+</div>
+<div>
+
+```csharp
+public class Casa
+{
+    private readonly Puerta _puerta = new();
+    private readonly Ventana _ventana = new();
+
+    // Una sola llamada que coordina varios subsistemas
+    public void AbrirTodo()
+    {
+        _puerta.Abrir();
+        _ventana.Abrir();
+    }
+
+    public void CerrarTodo()
+    {
+        _puerta.Cerrar();
+        _ventana.Cerrar();
+    }
+}
+```
+
+</div>
+</div>
+
+---
+
+## 💉 Las dependencias llegan de fuera
+
+La composición facilita la **inyección de dependencias**: en lugar de fabricar dentro los objetos que tu clase necesita, se los pasas por el constructor. Así el código es más flexible, más fácil de cambiar y de testear:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```mermaid
+classDiagram
+    direction LR
+    class Coche {
+        -Motor _motor
+        +Coche(Motor motor)
+        +Arrancar()
+    }
+    class Motor {
+        +Encender()
+    }
+    Coche o-- Motor : inyección
+```
+
+</div>
+<div>
+
+<RealExample app="TiendaDawApi">
+
+En la TiendaDawApi, los servicios reciben sus repositorios por el constructor (`public class ProductosService(IProductosRepository repo)`). En los tests se les pasa un doble falso y el servicio funciona sin base de datos: eso es inyección de dependencias.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## 🧩 El código con inyección explícita
+
+Y este es el código con inyección explícita en el constructor: la dependencia llega montada desde fuera, sin `new` escondido dentro de la clase:
+
+<div class="grid grid-cols-[4fr_6fr] gap-5 items-start">
+<div>
+
+```csharp
+public class Motor
+{
+    public string Tipo { get; }
+
+    public Motor(string tipo) => Tipo = tipo;
+
+    public void Encender() => Console.WriteLine("Motor encendido");
+}
+```
+
+</div>
+<div>
+
+```csharp
+public class Coche
+{
+    private readonly Motor _motor;
+
+    // La dependencia llega de fuera: no hay new escondido dentro
+    public Coche(Motor motor) => _motor = motor;
+
+    public void Arrancar() => _motor.Encender();
+}
+```
+
+</div>
+</div>
+
+---
+
+## 🚗 La inyección en uso
+
+Así se usa en el programa principal: montas la dependencia fuera y se la entregas al objeto que la necesita. Una sola línea cambia un motor por otro sin tocar la clase `Coche`:
+
+<div class="grid grid-cols-[4fr_6fr] gap-5 items-start">
+<div>
+
+<TipBox type="consejo">
+
+Esta es la base de la Inyección de Dependencias de .NET que usarás en todos los proyectos web del ciclo: `builder.Services.AddScoped<...>` registra qué objeto entrega el contenedor cuando se lo pidan por constructor.
+
+</TipBox>
+
+</div>
+<div>
+
+```csharp
+var motorV8 = new Motor("V8");
+var miCoche = new Coche(motorV8);
+miCoche.Arrancar(); // Imprime: Motor encendido
+```
+
+</div>
+</div>
+
+---
+
+## Resumen del punto 11
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+| Concepto | Descripción |
+|----------|-------------|
+| **Patrón de diseño** | Solución probada y reutilizable a un problema recurrente |
+| **Singleton** | Una única instancia en toda la aplicación; constructor privado |
+| **Lazy** | Creación diferida hasta el primer uso; `Lazy<T>` en C# |
+| **Método fábrica** | Centraliza la creación y aplica reglas antes del `new` |
+| **API fluida y Builder** | Métodos que devuelven `this`; objetos complejos paso a paso |
+| **Fachada** | Interfaz simple sobre varios subsistemas complejos |
+| **Inyección por constructor** | Las dependencias llegan de fuera; código flexible y testeable |
+
+</div>
+<div>
+
+<ConceptCard icon="✅" title="Buenas prácticas" accent="green">
+
+- Singleton solo cuando el problema lo exija
+- Carga perezosa para lo costoso que puede no usarse
+- Centralizar la creación en métodos fábrica
+- Inyectar las dependencias por constructor
+
+</ConceptCard>
+
+<div class="mt-3">
+
+**⏭️ ¿Qué viene después?** En el **punto 12**: excepciones en la POO — detectar, lanzar y capturar errores.
+
+</div>
+
+</div>
+</div>
+
+---
 layout: center
 ---
 
