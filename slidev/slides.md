@@ -6703,6 +6703,485 @@ graph LR
 </div>
 
 ---
+layout: section
+---
+
+<div class="ud-section-number">13</div>
+
+# Buenas prácticas
+
+<div class="opacity-70">Nombres claros, clases pequeñas, cero repetición</div>
+
+---
+
+## 13 · Punto de partida
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+<TipBox type="consejo" title="Punto de partida">
+
+¿Por qué dos programas que «hacen lo mismo» pueden tardar semanas en mantenerse uno y meses el otro? La diferencia no es la funcionalidad, es el código: nombres claros, clases pequeñas, sin repetición. Estas son las buenas prácticas que separan al aficionado del profesional.
+
+</TipBox>
+
+</div>
+<div>
+
+<Objetivos
+  :items="[
+    'Aplicar las convenciones de nomenclatura de C# de forma consistente',
+    'Explicar y aplicar los principios SRP y DRY en clases y métodos',
+    'Preferir propiedades e inmutabilidad para proteger el estado',
+    'Validar pronto con el principio fail-fast y documentar con XML comments',
+    'Organizar el código en capas con namespaces claros',
+  ]"
+/>
+
+</div>
+</div>
+
+---
+
+## ✏️ Nomenclatura y estilo
+
+El código se lee muchas más veces de las que se escribe. Usa nombres que expliquen la **intención**, no el tipo:
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+- **PascalCase:** clases, métodos y propiedades (`CuentaBancaria`)
+- **camelCase:** variables locales y parámetros (`saldoActual`)
+- **`_` inicial:** campos privados (`_saldo`)
+
+<TipBox type="consejo">
+
+Los nombres en inglés son la convención profesional; los mensajes al usuario y los comentarios, en español.
+
+</TipBox>
+
+</div>
+<div>
+
+<RealExample app="Código de empresa">
+
+En el código de cualquier empresa verás `usuarioRepository.ObtenerPorId(42)`: en una línea sabes qué hace. Si en cambio hubiera `hacer2(x)`, tendrías que leer veinte líneas para descubrirlo.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## 🎯 Responsabilidad única (SRP)
+
+El principio de **responsabilidad única** dicta que una clase debe tener **una sola razón para cambiar**. Si tu clase `Usuario` también envía correos y se conecta a la base de datos, tiene demasiadas: divide y vencerás.
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```mermaid
+graph LR
+    subgraph MAL["Una clase con demasiadas responsabilidades"]
+        G["Usuario<br/>datos + correos + BD"]
+    end
+    subgraph BIEN["Una razón para cambiar por clase"]
+        U["Usuario"]
+        S["ServicioCorreo"]
+        R["RepositorioUsuario"]
+    end
+    G -->|"divide"| U
+    G -->|"divide"| S
+    G -->|"divide"| R
+    style G fill:#f44336,color:#fff
+    style U fill:#4CAF50,color:#fff
+    style S fill:#4CAF50,color:#fff
+    style R fill:#4CAF50,color:#fff
+```
+
+</div>
+<div>
+
+<RealExample app="Netflix">
+
+En Netflix, el sistema que recomienda películas no descarga los vídeos: es una clase distinta de la que los sirve. Si mañana cambian el algoritmo, no tocan nada del reproductor.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## 🧩 Métodos cortos y enfocados
+
+Cada método debe hacer **una sola tarea**. Si un método es muy largo o tiene muchos niveles de anidamiento, es una señal clara de que debe dividirse:
+
+<TipBox type="analogia">
+
+**Un método es una receta de cocina:** si ocupa tres páginas, es probablemente tres recetas pegadas. Mejor tres métodos que se llaman entre sí.
+
+</TipBox>
+
+---
+
+## 🔁 DRY: no te repitas
+
+Evita repetir código. Si copias y pegas la misma lógica en tres sitios, extrae esa lógica a un método común o a una clase de utilidad: **la duplicación es la raíz de muchos *bugs***.
+
+```csharp
+// ❌ MALO: la misma lógica de cálculo de IVA en tres métodos
+// ✅ BUENO: un único método Iva.Calcular(importe) usado por todos
+decimal total = importe + Iva.Calcular(importe);
+```
+
+<RealExample app="Cálculo de IVA">
+
+Si cada pantalla de tu app calcula el precio final a su manera, llegará el día en que una aplique IVA y otra no. Centralizar el cálculo es la diferencia entre un bug puntual y un escándalo contable.
+
+</RealExample>
+
+---
+
+## 🔒 Propiedades, nunca campos públicos
+
+El estado de un objeto debe estar **protegido**. Nunca expongas variables directamente: usa siempre propiedades, incluso automáticas, para poder añadir validaciones en el futuro sin romper el código que ya usa tu clase:
+
+```csharp
+// ❌ MALO: campo público, cualquiera puede poner Edad = -5
+public int Edad;
+
+// ✅ BUENO: propiedad; mañana añades validación sin tocar a nadie
+public int Edad { get; set; }
+```
+
+---
+
+## 🧊 Inmutabilidad cuando proceda
+
+Si un objeto **no debe cambiar después de crearse** (una transacción terminada, un punto en el espacio), usa propiedades `readonly`, `init` y el tipo `record`: son más fáciles de depurar y más seguros en entornos multihilo.
+
+```csharp
+public record Venta(string Producto, decimal Importe, DateTime Fecha);
+
+// Una venta registrada no cambia: se crea una nueva si hay un ajuste
+var venta = new Venta("Teclado", 49.99m, DateTime.Now);
+var ajuste = venta with { Importe = 44.99m };
+```
+
+<RealExample app="Facturación">
+
+Los importes de una factura ya emitida no se editan: si hay un error, se emite una factura rectificativa. Modelarlo como `record` inmutable reproduce esa regla de negocio en el propio código.
+
+</RealExample>
+
+---
+
+## ⚡ Validación temprana (fail-fast)
+
+Comprueba los argumentos de los métodos y constructores **lo antes posible**. No esperes a que el error ocurra en la línea 50: lanza una excepción en la línea 1 si los datos son malos:
+
+```csharp
+public void ProcesarPedido(Pedido p)
+{
+    if (p is null)
+        throw new ArgumentNullException(nameof(p));
+    // ... resto de la lógica ...
+}
+```
+
+<TipBox type="truco">
+
+`nameof(p)` devuelve el nombre del parámetro como texto: si mañana renombras la variable, el mensaje de error se actualiza solo.
+
+</TipBox>
+
+---
+
+## 📚 Documentación con XML comments
+
+Escribe resúmenes que expliquen el **qué** y el **por qué**, no solo el **cómo**. C# permite generar documentación automática a partir de estos comentarios:
+
+```csharp
+/// <summary>
+/// Calcula el interés anual basado en el tipo de riesgo del cliente.
+/// </summary>
+/// <param name="capital">Monto inicial invertido.</param>
+/// <param name="riesgo">Nivel de riesgo del 1 al 5.</param>
+/// <returns>El monto de interés generado.</returns>
+public decimal CalcularInteres(decimal capital, int riesgo)
+{
+    // ...
+}
+```
+
+---
+
+## 💡 Donde ya lo estás viendo
+
+Si usas `Console.WriteLine`, esta documentación la estás viendo a diario; en el proyecto, además, es obligatoria:
+
+<RealExample app="Ayuda de Console.WriteLine">
+
+Cuando usas `Console.WriteLine` y ves la ayuda al pasar el cursor, estás viendo la documentación XML que alguien escribió con `///`: en equipo, permite a otro desarrollador usar tu método sin leer su código.
+
+</RealExample>
+
+<TipBox type="nota">
+
+La norma del proyecto exige XMLDoc en clases públicas, interfaces y métodos públicos; el código autoexplicativo no necesita comentario.
+
+</TipBox>
+
+---
+
+## 🐢 Rendimiento: nada caro en getters
+
+Evita operaciones costosas (consultas a base de datos, cálculos complejos) dentro de los bloques `get` o de los constructores. Para estos casos, usa métodos explícitos (`CargarDatos()`) o el patrón `Lazy<T>`:
+
+```csharp
+// ❌ MALO: cada consulta de la propiedad lanza una consulta a la BD
+public List<Usuario> Usuarios => Repositorio.ObtenerTodos();
+
+// ✅ BUENO: el coste se paga solo cuando se necesita
+private readonly Lazy<List<Usuario>> _usuarios = new(Repositorio.ObtenerTodos);
+public List<Usuario> Usuarios => _usuarios.Value;
+```
+
+<TipBox type="advertencia">
+
+Una propiedad debe parecer barata: quien la llama no espera que «haga cosas raras». Si leer algo es caro, mejor es un método (`ObtenerUsuarios()`), que avisa por su nombre de que hay trabajo detrás.
+
+</TipBox>
+
+---
+
+## 🧱 Separación de capas
+
+Organiza tu código en capas lógicas, cada una con su misión, con **namespaces claros**: así, un cambio en la interfaz no obliga a cambiar la base de datos:
+
+```mermaid
+graph LR
+    P["1. Presentación<br/>interacción con el usuario"] --> L["2. Lógica / negocio<br/>reglas y modelos"]
+    L --> D["3. Datos<br/>acceso a BBDD o ficheros"]
+    style P fill:#2196F3,color:#fff
+    style L fill:#9C27B0,color:#fff
+    style D fill:#4CAF50,color:#fff
+```
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```csharp
+namespace MiApp.Presentacion;   // capa 1
+namespace MiApp.Servicios;      // capa 2
+namespace MiApp.Repositorios;   // capa 3
+```
+
+</div>
+<div>
+
+<RealExample app="TiendaDawApi">
+
+La TiendaDawApi separa `Controllers` (presentación), `Services` (lógica) y `Repositories` (datos): si mañana cambias de SQLite a PostgreSQL, solo tocas la capa de datos.
+
+</RealExample>
+
+</div>
+</div>
+
+---
+
+## Resumen del punto 13
+
+<div class="grid grid-cols-[7fr_4fr] gap-5 items-start">
+<div>
+
+| Concepto | Descripción |
+|----------|-------------|
+| **Nomenclatura** | PascalCase en clases y métodos, `camelCase` en variables, `_` en campos |
+| **SRP** | Una clase, una razón para cambiar |
+| **DRY** | No repitas lógica: extrae a un método o clase común |
+| **Propiedades e inmutabilidad** | Nunca campos públicos; `record` e `init` para lo que no cambia |
+| **Fail-fast** | Validar al principio y lanzar con `nameof` |
+| **XML comments** | Documentar el qué y el por qué con `///` |
+| **Capas** | Presentación → lógica → datos, con namespaces propios |
+
+</div>
+<div>
+
+<ConceptCard icon="✅" title="Buenas prácticas" accent="green">
+
+- Nombrar por intención, no por tipo
+- Una razón por clase y una tarea por método
+- Extraer la repetición (DRY) en métodos comunes
+- Propiedades, validación temprana y XML comments
+
+</ConceptCard>
+
+<div class="mt-3">
+
+**⏭️ ¿Qué viene después?** En el **punto 14**: resumen de la unidad — mapa conceptual, errores comunes y checklist.
+
+</div>
+
+</div>
+</div>
+
+---
+layout: section
+---
+
+<div class="ud-section-number">14</div>
+
+# Resumen y conclusiones
+
+<div class="opacity-70">Cierre del tema</div>
+
+---
+
+## Mapa conceptual del tema
+
+```mermaid
+graph LR
+    A[1-3. Conceptos, objetos<br>y organización] --> B[4-6. Clases, referencias<br>y constructores]
+    B --> C[7-9. Encapsulación, tipos<br>y composición]
+    C --> D[10-11. Diseño<br>y patrones]
+    D --> E[12-13. Excepciones<br>y buenas prácticas]
+    E --> F[14. Resumen ✅]
+
+    style A fill:#2196F3,color:#fff
+    style B fill:#4CAF50,color:#fff
+    style C fill:#FF9800,color:#fff
+    style D fill:#9C27B0,color:#fff
+    style E fill:#9C27B0,color:#fff
+    style F fill:#4CAF50,color:#fff
+```
+
+<TipBox type="nota">
+
+**Patrón universal:** el código pasa de **datos sueltos** a **objetos**: clases que modelan el mundo, encapsulación que protege el estado, patrones que reutilizan y excepciones que defienden del error.
+
+</TipBox>
+
+---
+
+## Errores comunes a evitar
+
+<div class="grid grid-cols-2 gap-4 items-start">
+<div>
+
+| Error | Cómo evitarlo |
+|---|---|
+| Campos `public` sin control | Propiedades con acceso controlado |
+| `==` compara referencias, no contenido | `Equals` (+ `GetHashCode`) o sobrecarga `==` |
+| Olvidar comprobar `null` | `is not null` o acceso seguro `?.` |
+| Capturar `Exception` primero | Ordena de lo específico a lo genérico |
+| `catch` vacío | Registra, relanza o maneja de verdad |
+
+</div>
+<div>
+
+| Error | Cómo evitarlo |
+|---|---|
+| Herencia por si acaso | Composición para "tiene un"; herencia para "es un" |
+| Constructores gigantes | Primarios, parámetros por defecto y fábricas |
+| Usar `-1` como señal de error | Lanza la excepción adecuada |
+| Paquetes fuera del `.csproj` | Entra en la carpeta del proyecto antes de `dotnet add package` |
+
+<TipBox type="advertencia">
+
+El error que **no avisa** es pensar que `==` compara contenido: en clases compara **referencias**. Usa `Equals` (+ `GetHashCode`) cuando quieras comparar estados.
+
+</TipBox>
+
+</div>
+</div>
+
+---
+
+## Checklist de supervivencia
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+<ConceptCard icon="🧠" title="¿Lo tienes claro?" accent="accent">
+
+- [ ] ¿Explico identidad, estado y comportamiento?
+- [ ] ¿Sé qué hace `new` y dónde queda el objeto?
+- [ ] ¿Distingo encapsulamiento de ocultación?
+- [ ] ¿Conozco los 4 modificadores y su símbolo UML?
+- [ ] ¿Diferencio `class`, `struct` y `record`?
+- [ ] ¿Comparo por identidad y por estado?
+- [ ] ¿Recuerdo el patrón **AEHP**?
+
+</ConceptCard>
+
+</div>
+<div>
+
+<ConceptCard icon="🧰" title="¿Lo sabes hacer?" accent="blue">
+
+- [ ] ¿Uso `get`, `set`, `init` y `required`?
+- [ ] ¿Creo constructores y encadeno con `this(...)`?
+- [ ] ¿Aplico composición cuando es "tiene un"?
+- [ ] ¿Montro un Singleton y un Builder?
+- [ ] ¿Capturo en el orden correcto y sin silenciar?
+
+</ConceptCard>
+
+</div>
+</div>
+
+<TipBox type="truco">
+
+**Truco mnemotécnico:** **AEHP** = los 4 pilares · «el encapsulamiento reúne, la ocultación protege» · `init` = cuándo se escribe, `required` = si se escribe · en los `catch`: de específico a genérico.
+
+</TipBox>
+
+---
+
+## ¿Qué viene después?
+
+<div class="grid grid-cols-2 gap-5 items-start">
+<div>
+
+```mermaid
+graph LR
+    A[UD01 ✅<br>Introducción] --> B[UD02 ✅<br>Estructurada<br>y Modular]
+    B --> C[UD03 ✅<br>Almacenamiento<br>Estático]
+    C --> D[UD04 ✅<br>POO]
+    D --> E[UD05<br>POO<br>Avanzada]
+    E --> F[UD06<br>Genérica<br>y Funcional]
+
+    style A fill:#4CAF50,color:#fff
+    style B fill:#4CAF50,color:#fff
+    style C fill:#4CAF50,color:#fff
+    style D fill:#4CAF50,color:#fff
+    style E fill:#FF9800,color:#fff
+    style F fill:#9C27B0,color:#fff
+```
+
+</div>
+<div>
+
+<ConceptCard icon="🚀" title="UD05: POO avanzada" accent="green">
+
+Profundizarás en **herencia, polimorfismo, interfaces y abstracción**: los conceptos de aquí se convertirán en arquitecturas completas.
+
+</ConceptCard>
+
+<TipBox type="nota">
+
+Los **arrays de la UD03** y los **objetos de esta unidad** se unirán en **colecciones y genéricos**.
+
+</TipBox>
+
+</div>
+</div>
+
+---
 layout: center
 ---
 
