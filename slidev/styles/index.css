@@ -569,6 +569,12 @@ html.dark .ud-highlight {
   margin-top: 0;
 }
 
+/* Tras un párrafo: el ritmo vertical (1em) ya lo pone el propio p; sumarle
+   1.1em más dejaba un hueco grande entre la prosa y el diagrama */
+.slidev-layout p + .mermaid {
+  margin-top: 0;
+}
+
 /* Un mermaid dentro de un grid es hijo directo: la separación la da el gap,
    no el margen (si no, la columna del diagrama arrancaba más abajo que la
    de al lado y las columnas desalineadas — regla de §4.2). */

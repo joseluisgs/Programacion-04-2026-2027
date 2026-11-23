@@ -28,6 +28,13 @@ export default (): MermaidConfig => ({
   },
   sequence: {
     useMaxWidth: true,
+    // Compacto: como los flowchart, que el diagrama de secuencia quepa SOLO
+    // bajo el tope del host (350px) sin depender del JS de ajuste (si no,
+    // al entrar en la slide se ve cortado por abajo).
+    messageMargin: 24,
+    noteMargin: 6,
+    boxMargin: 6,
+    actorMargin: 60,
   },
   er: {
     useMaxWidth: true,
