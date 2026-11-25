@@ -553,6 +553,13 @@ html.dark .ud-highlight {
 .slidev-layout .mermaid {
   display: block;
   width: 100%;
+  /* ⚠️ flex-shrink:0 — el host es flex-item de .slidev-layout: en slides
+     densas el flex lo encogía POR DEBAJO de su propio contenido y el
+     overflow:hidden recortaba el diagrama en silencio (bug: "mermaid
+     recortado +50px": el JS escribía820×282 pero el host solo admitía
+     253px). Así nunca se recorta: si no cabe, DESBORDA y visual-check
+     lo detecta. */
+  flex-shrink: 0;
   /* Un poco menos de ancho = diagrama más bajo y texto más legible */
   max-width: 820px;
   max-height: 350px;

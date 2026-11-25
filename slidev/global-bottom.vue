@@ -59,7 +59,27 @@ function ajustarMermaid(host: Element): void {
   const cont = host.parentElement;
   if (cont && getComputedStyle(cont).display.includes('flex')) {
     // Hueco libre real en el contenedor (sin tocar los márgenes del host).
-    let libre = cont.clientHeight;
+    // El fondo NO es el bottom del layout sino la LÍNEA DEL PIE menos aire:
+    // si no, el diagrama se lleva el hueco del pie y lo que va debajo
+    // (TipBox, ejemplos) desborda (bug: "mermaid recortado" → al arreglar
+    // el recorte aparecía "DESBORDA el pie").
+    // OJO: el layout lleva padding (40px): clientHeight lo INCLUYE pero la
+    // suma de hijos no → hay que restarlo, si no `libre` sale inflado y el
+    // JS no encoge nunca (bug: "svg 282 vs host 253 → gap negativo").
+    const csCont = getComputedStyle(cont);
+    const padTop = parseFloat(csCont.paddingTop) || 0;
+    const padBot = parseFloat(csCont.paddingBottom) || 0;
+    let fondo = cont.clientHeight - padTop - padBot;
+    const pie = document.querySelector('.ud-brand-footer');
+    if (pie) {
+      const cr = cont.getBoundingClientRect();
+      const escala = cont.clientWidth ? cr.width / cont.clientWidth : 1;
+      const hastaPie = (pie.getBoundingClientRect().top - cr.top) / escala;
+      // hastaPie es desde el BORDE: se pasa a coordenadas de contenido
+      // 20px de reserva ≈ 34px en pantalla > umbral gap ≥25
+      if (hastaPie > 60) fondo = Math.min(fondo, hastaPie - padTop - 20);
+    }
+    let libre = fondo;
     for (const h of Array.from(cont.children)) {
       if (h === host) continue;
       const hs = getComputedStyle(h);
@@ -71,6 +91,28 @@ function ajustarMermaid(host: Element): void {
     // que acabamos de encoger → se retroalimenta y el diagrama se queda
     // clavado en el mínimo (bug: "diagrama enanito"). `libre` ya es estable.
     tope = Math.max(40, Math.min(maxCss, libre));
+  }
+
+  /* --------------------------------------------------------------
+     Reserva del pie: el footer (.ud-brand-footer) se superpone al
+     layout; el host no puede cruzar su línea (bug: "mermaid invade
+     el pie en la 27"). Se mide desde EL PROPIO host hasta la línea
+     del pie en px de layout: un diagrama en medio de la slide no se
+     encoge si aún queda contenido debajo.
+     -------------------------------------------------------------- */
+  if (cont) {
+    const cr = cont.getBoundingClientRect();
+    const escala = cont.clientWidth ? cr.width / cont.clientWidth : 1;
+    const pie = document.querySelector('.ud-brand-footer');
+    if (pie && escala > 0) {
+      const hostTop = host.getBoundingClientRect().top;
+      const lineaPie = pie.getBoundingClientRect().top;
+      // -20px de aire (≈34px en pantalla) además de no cruzar el pie:
+      // cubre también los contenedores NO flex (wrapper de bloque vacío)
+      // donde no pasa la rama de `fondo`.
+      const altoMax = (lineaPie - hostTop) / escala - 20;
+      if (altoMax > 0 && tope > altoMax) tope = Math.max(40, altoMax);
+    }
   }
 
   const ancho = Math.max(40, Math.min(hostW, Math.floor(tope * ratio)));
@@ -107,6 +149,17 @@ onMounted(() => {
   // Mermaid puede tardar en renderizar tras montar la slide
   setTimeout(barrerMermaid, 250);
   setTimeout(barrerMermaid, 800);
+  // Tras cargar las fuentes crecen los hermanos del host (títulos, TipBox) y
+  // el hueco libre REAL se reduce: sin este barrido el SVG queda escrito con
+  // el hueco de antes y el flex recorta el diagrama (bug: "mermaid recortado
+  // +50px en 10 slides"). Se re-ejecuta con la maqueta ya asentada.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      barrerMermaid();
+      setTimeout(barrerMermaid, 400);
+    });
+  }
+  setTimeout(barrerMermaid, 1600); // barrido final de seguridad
 });
 </script>
 

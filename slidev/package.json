@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "slidev slides.md",
     "build": "slidev build slides.md",
-    "export": "slidev export slides.md"
+    "export": "slidev export slides.md",
+    "check": "node tools/visual-check.mjs",
+    "hojas": "node tools/montajes.mjs",
+    "checkpdf": "node tools/check-pdf.mjs"
   },
   "dependencies": {
     "@slidev/cli": "latest",
