@@ -34,7 +34,7 @@ UD04. Programación Orientada a Objetos. 1DAW. Curso 2026-2027.
 
 ## Presentaciones
 
-- Presentación PDF ([tema claro](presentaciones/ud04-poo-claro.pdf), [tema oscuro](presentaciones/ud04-poo-oscuro.pdf))
+- Presentación PDF ([tema claro](presentaciones/UD04-claro.pdf), [tema oscuro](presentaciones/UD04-oscuro.pdf))
 
 
 ## Resultados de aprendizaje y criterios de evaluación
