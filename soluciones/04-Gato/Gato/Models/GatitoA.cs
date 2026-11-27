@@ -15,6 +15,12 @@ public class GatitoA {
     }
 
     public int NumeroDeBostezos() {
+        Dormir(); 
         return new Random().Next(1, 10);
+        
+    }
+
+    private void Dormir() {
+        Console.WriteLine($"{Nombre} está durmiendo.");
     }
 }

@@ -4,6 +4,7 @@ var g1= new GatitoA();
 g1.Nombre = "Michi";
 g1.Edad = -1;
 g1.Maullar();
+
 Console.WriteLine($"Nombre: {g1.Nombre}, Edad: {g1.Edad}");
 Console.WriteLine($"Número de bostezos: {g1.NumeroDeBostezos()}");
 
